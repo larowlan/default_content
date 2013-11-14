@@ -15,7 +15,7 @@ class DefaultContentTest extends WebTestBase {
    *
    * @var array
    */
-  public static $modules = array('rest', 'taxonomy', 'hal', 'yaml_serialization', 'default_content');
+  public static $modules = array('rest', 'taxonomy', 'hal', 'default_content');
 
   public static function getInfo() {
     return array(
