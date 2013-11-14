@@ -43,7 +43,10 @@ class DefaultContentTest extends WebTestBase {
     $this->assertEqual($node->body->value, 'Crikey it works!');
     // Content is always imported as anonymous.
     $this->assertEqual($node->uid->target_id, 0);
-    $this->drupalGet('node/' . $node->nid->value);
+    $terms = \Drupal::entityManager()->getStorageController('taxonomy_term')->loadMultiple();
+    $term = reset($terms);
+    $this->assertTrue(!empty($term));
+    $this->assertEqual($term->name->value, 'A tag');
     $term_id = $node->field_tags->target_id;
     $this->assertTrue(!empty($term_id), 'Term reference populated');
   }

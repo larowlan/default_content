@@ -82,14 +82,14 @@
                 }
             }
         ],
-        "http://drupal.org/rest/relation/node/release/field_tags": [
+        "http://drupal.org/rest/relation/node/page/field_tags": [
             {
                 "_links":{
                     "self":{
                         "href":"http://drupal.org/taxonomy/term/1"
                     },
                     "type":{
-                        "href":"http://drupal.org/rest/type/taxonomy_term/field_tags"
+                        "href":"http://drupal.org/rest/type/taxonomy_term/tags"
                     }
                 },
                 "uuid":[
