@@ -27,8 +27,6 @@ class DefaultContentTest extends WebTestBase {
 
   protected function setUp() {
     parent::setUp();
-    // Login as admin.
-    $this->drupalLogin($this->drupalCreateUser(array_keys(\Drupal::moduleHandler()->invokeAll(('permission')))));
     $this->drupalCreateContentType(array('type' => 'page'));
   }
 
@@ -36,6 +34,8 @@ class DefaultContentTest extends WebTestBase {
    * Test importing default content.
    */
   public function testImport() {
+    // Login as admin.
+    $this->drupalLogin($this->drupalCreateUser(array_keys(\Drupal::moduleHandler()->invokeAll(('permission')))));
     // Enable the module and import the content.
     \Drupal::moduleHandler()->install(array('default_content_test'), TRUE);
     $this->rebuildContainer();

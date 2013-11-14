@@ -18,7 +18,7 @@
         ],
         "http://drupal.org/rest/relation/node/page/field_tags":[
             {
-                "href":"http://d8.taco/taxonomy/term/1"
+                "href":"http://drupal.org/taxonomy/term/1"
             }
         ]
     },

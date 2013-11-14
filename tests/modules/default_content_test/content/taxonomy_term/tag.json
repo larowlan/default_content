@@ -1,7 +1,7 @@
 {
     "_links":{
         "self":{
-            "href":"http://d8.taco/taxonomy/term/1"
+            "href":"http://drupal.org/taxonomy/term/1"
         },
         "type":{
             "href":"http://drupal.org/rest/type/taxonomy_term/tags"

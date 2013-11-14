@@ -88,6 +88,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
     $folder = drupal_get_path('module', $module) . "/content";
 
     if (file_exists($folder)) {
+      $file_map = array();
       foreach ($this->entityManager->getDefinitions() as $entity_type => $entity_type_info) {
         $reflection = new \ReflectionClass($entity_type_info['class']);
         // We are only interested in importing content entities.
@@ -95,7 +96,39 @@ class DefaultContentManager implements DefaultContentManagerInterface {
           continue;
         }
         $files = $this->scanner()->scan('/^(.*)\.json/', $folder . '/' . $entity_type);
+        // Parse all of the files and sort them in order of dependency.
         foreach ($files as $file) {
+          $contents = $this->parseFile($file);
+          // Decode the file contents.
+          $decoded = $this->serializer->decode($contents, 'hal_json');
+          // Get the link to this entity.
+          $self = $decoded['_links']['self']['href'];
+          // Store the entity type with the file.
+          $file->entity_type = $entity_type;
+          // Store the file in the file map.
+          $file_map[$self] = $file;
+          // Create a vertex for the graph.
+          $vertex = (object) array('link' => $self);
+          if (empty($decoded['_embedded'])) {
+            // No dependencies to resolve.
+            continue;
+          }
+          // Here we need to resolve our dependencies;
+          foreach ($decoded['_embedded'] as $embedded) {
+            $item = reset($embedded);
+            $item_link = $item['_links']['self']['href'];
+            $embedded_vertex = (object) array('link' => $item_link);
+            $this->tree()->addDirectedEdge($vertex, $embedded_vertex);
+          }
+        }
+      }
+
+      // @todo what if no dependencies?
+      $sorted = $this->sortTree();
+      foreach($sorted as $vertex) {
+        if (!empty($file_map[$vertex->link])) {
+          $file = $file_map[$vertex->link];
+          $entity_type = $file->entity_type;
           $resource = $this->resourcePluginManager->getInstance(array('id' => 'entity:' . $entity_type));
           $definition = $resource->getPluginDefinition();
           $contents = $this->parseFile($file);
@@ -103,17 +136,9 @@ class DefaultContentManager implements DefaultContentManagerInterface {
           $unserialized = $this->serializer->deserialize($contents, $class, 'hal_json', array('request_method' => 'POST'));
           $unserialized->enforceIsNew(TRUE);
           $resource->post(NULL, $unserialized);
-          // Here we need to resolve our dependencies;
-          //foreach ($unserialized->embedded as $embedded) {
-          //  $this->tree()->addDirectedEdge($unserialized, $embedded);
-          //}
+          $created[] = $unserialized;
         }
       }
-
-      //foreach($this->sortTree() as $unserialized) {
-        //$resource = $this->resourcePluginManager->getInstance(array('id' => 'entity:' . $unserialized->entityType()));
-        //$resource->post(NULL, $unserialized);
-      //}
     }
     // Reset the tree.
     $this->resetTree();
@@ -148,10 +173,10 @@ class DefaultContentManager implements DefaultContentManagerInterface {
   }
 
   protected function tree() {
-    if ($this->tree) {
-      return $this->tree;
+    if (empty($this->tree)) {
+      $this->tree = new DirectedAdjacencyList();
     }
-    return new DirectedAdjacencyList();
+    return $this->tree;
   }
 
   protected function resetTree() {
@@ -163,26 +188,3 @@ class DefaultContentManager implements DefaultContentManagerInterface {
   }
 
 }
-
-/**
-<?php
-
-use \Gliph\Graph\DirectedAdjacencyList;
-use \Gliph\Traversal\DepthFirst;
-
-$graph = new DirectedAdjacencyList();
-
-foreach ($entity_list as $entity) {
-if ($entity->has('embedded')) {
-foreach ($entity->get('embedded') as $embedded) {
-$graph->addDirectedEdge($entity, $embedded);
-}
-}
-}
-
-$tsl = DepthFirst::toposort($graph);
-
-foreach($tsl as $entity) {
-// do your import thang
-}
- */
