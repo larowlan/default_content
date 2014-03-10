@@ -44,7 +44,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
   /**
    * The entity manager.
    *
-   * @var \Drupal\Core\Entity\EntityManager
+   * @var \Drupal\Core\Entity\EntityManagerInterface
    */
   protected $entityManager;
 
@@ -89,13 +89,16 @@ class DefaultContentManager implements DefaultContentManagerInterface {
 
     if (file_exists($folder)) {
       $file_map = array();
-      foreach ($this->entityManager->getDefinitions() as $entity_type => $entity_type_info) {
-        $reflection = new \ReflectionClass($entity_type_info['class']);
+      foreach ($this->entityManager->getDefinitions() as $entity_type_id => $entity_type) {
+        $reflection = new \ReflectionClass($entity_type->getClass());
         // We are only interested in importing content entities.
         if ($reflection->implementsInterface('\Drupal\Core\Config\Entity\ConfigEntityInterface')) {
           continue;
         }
-        $files = $this->scanner()->scan('/^(.*)\.json/', $folder . '/' . $entity_type);
+        if (!file_exists($folder . '/' . $entity_type_id)) {
+          continue;
+        }
+        $files = $this->scanner()->scan($folder . '/' . $entity_type_id);
         // Parse all of the files and sort them in order of dependency.
         foreach ($files as $file) {
           $contents = $this->parseFile($file);
@@ -104,7 +107,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
           // Get the link to this entity.
           $self = $decoded['_links']['self']['href'];
           // Store the entity type with the file.
-          $file->entity_type = $entity_type;
+          $file->entity_type_id = $entity_type_id;
           // Store the file in the file map.
           $file_map[$self] = $file;
           // Create a vertex for the graph.
@@ -128,15 +131,15 @@ class DefaultContentManager implements DefaultContentManagerInterface {
       foreach($sorted as $vertex) {
         if (!empty($file_map[$vertex->link])) {
           $file = $file_map[$vertex->link];
-          $entity_type = $file->entity_type;
-          $resource = $this->resourcePluginManager->getInstance(array('id' => 'entity:' . $entity_type));
+          $entity_type_id = $file->entity_type_id;
+          $resource = $this->resourcePluginManager->getInstance(array('id' => 'entity:' . $entity_type_id));
           $definition = $resource->getPluginDefinition();
           $contents = $this->parseFile($file);
           $class = $definition['serialization_class'];
-          $unserialized = $this->serializer->deserialize($contents, $class, 'hal_json', array('request_method' => 'POST'));
-          $unserialized->enforceIsNew(TRUE);
-          $resource->post(NULL, $unserialized);
-          $created[] = $unserialized;
+          $entity = $this->serializer->deserialize($contents, $class, 'hal_json', array('request_method' => 'POST'));
+          $entity->enforceIsNew(TRUE);
+          $entity->save();
+          $created[] = $entity;
         }
       }
     }
