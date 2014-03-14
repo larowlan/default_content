@@ -30,7 +30,7 @@ class DefaultContentScanner {
     $flags |= \FilesystemIterator::SKIP_DOTS;
     $flags |= \FilesystemIterator::CURRENT_AS_SELF;
     $directory_iterator = new \RecursiveDirectoryIterator($directory, $flags);
-    $iterator = $iterator = new \RecursiveIteratorIterator($directory_iterator);
+    $iterator = new \RecursiveIteratorIterator($directory_iterator);
 
     $files = array();
     foreach ($iterator as $fileinfo) {
