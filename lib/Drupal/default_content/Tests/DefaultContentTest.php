@@ -17,6 +17,9 @@ class DefaultContentTest extends WebTestBase {
    */
   public static $modules = array('rest', 'taxonomy', 'hal', 'default_content');
 
+  /**
+   * {@inheritdoc}
+   */
   public static function getInfo() {
     return array(
       'name' => 'Default content test',
@@ -25,6 +28,9 @@ class DefaultContentTest extends WebTestBase {
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp() {
     parent::setUp();
     $this->drupalCreateContentType(array('type' => 'page'));
@@ -43,6 +49,7 @@ class DefaultContentTest extends WebTestBase {
     $this->assertEqual($node->body->value, 'Crikey it works!');
     // Content is always imported as anonymous.
     $this->assertEqual($node->uid->target_id, 0);
+    $this->assertEqual($node->getType(), 'page');
     $terms = \Drupal::entityManager()->getStorageController('taxonomy_term')->loadMultiple();
     $term = reset($terms);
     $this->assertTrue(!empty($term));
