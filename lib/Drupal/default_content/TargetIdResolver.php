@@ -11,7 +11,7 @@ use Drupal\serialization\EntityResolver\EntityResolverInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 /**
- * Resolves entities from data that contains an entity UUID.
+ * Resolves entities from data that contains a target id.
  */
 class TargetIdResolver implements EntityResolverInterface {
 
