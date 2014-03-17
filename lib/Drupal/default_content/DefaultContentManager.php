@@ -189,6 +189,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
 
   protected function resetTree() {
     $this->tree = FALSE;
+    $this->vertexes = array();
   }
 
   protected function sortTree() {
