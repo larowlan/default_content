@@ -22,24 +22,14 @@
             }
         ]
     },
-    "nid": [
-        {
-            "value": "1"
-        }
-    ],
     "uuid": [
         {
             "value": "65c412a3-b83f-4efb-8a05-5a6ecea10ad4"
         }
     ],
-    "vid": [
-        {
-            "value": "1"
-        }
-    ],
     "type": [
         {
-            "value": "page"
+            "target_id": "page"
         }
     ],
     "langcode": [

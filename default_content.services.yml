@@ -8,3 +8,7 @@ services:
   default_content.link_manager.relation:
       class: Drupal\default_content\LinkManager\RelationLinkManager
       arguments: ['@cache.cache', '@entity.manager']
+  default_content.entity_resolver.target_id:
+    class: Drupal\default_content\TargetIdResolver
+    tags:
+      - { name: entity_resolver}

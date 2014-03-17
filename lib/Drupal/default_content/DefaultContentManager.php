@@ -44,7 +44,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
   /**
    * The entity manager.
    *
-   * @var \Drupal\Core\Entity\EntityManager
+   * @var \Drupal\Core\Entity\EntityManagerInterface
    */
   protected $entityManager;
 
@@ -61,6 +61,13 @@ class DefaultContentManager implements DefaultContentManagerInterface {
    * @var \Gliph\Graph\DirectedAdjacencyList
    */
   protected $tree = FALSE;
+
+  /**
+   * A list of vertex objects keyed by their link.
+   *
+   * @var array
+   */
+  protected $vertexes = array();
 
   /**
    * Constructs the default content manager.
@@ -89,13 +96,16 @@ class DefaultContentManager implements DefaultContentManagerInterface {
 
     if (file_exists($folder)) {
       $file_map = array();
-      foreach ($this->entityManager->getDefinitions() as $entity_type => $entity_type_info) {
-        $reflection = new \ReflectionClass($entity_type_info['class']);
+      foreach ($this->entityManager->getDefinitions() as $entity_type_id => $entity_type) {
+        $reflection = new \ReflectionClass($entity_type->getClass());
         // We are only interested in importing content entities.
         if ($reflection->implementsInterface('\Drupal\Core\Config\Entity\ConfigEntityInterface')) {
           continue;
         }
-        $files = $this->scanner()->scan('/^(.*)\.json/', $folder . '/' . $entity_type);
+        if (!file_exists($folder . '/' . $entity_type_id)) {
+          continue;
+        }
+        $files = $this->scanner()->scan($folder . '/' . $entity_type_id);
         // Parse all of the files and sort them in order of dependency.
         foreach ($files as $file) {
           $contents = $this->parseFile($file);
@@ -104,11 +114,11 @@ class DefaultContentManager implements DefaultContentManagerInterface {
           // Get the link to this entity.
           $self = $decoded['_links']['self']['href'];
           // Store the entity type with the file.
-          $file->entity_type = $entity_type;
+          $file->entity_type_id = $entity_type_id;
           // Store the file in the file map.
           $file_map[$self] = $file;
           // Create a vertex for the graph.
-          $vertex = (object) array('link' => $self);
+          $vertex = $this->getVertex($self);
           if (empty($decoded['_embedded'])) {
             // No dependencies to resolve.
             continue;
@@ -116,9 +126,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
           // Here we need to resolve our dependencies;
           foreach ($decoded['_embedded'] as $embedded) {
             $item = reset($embedded);
-            $item_link = $item['_links']['self']['href'];
-            $embedded_vertex = (object) array('link' => $item_link);
-            $this->tree()->addDirectedEdge($vertex, $embedded_vertex);
+            $this->tree()->addDirectedEdge($vertex, $this->getVertex($item['_links']['self']['href']));
           }
         }
       }
@@ -128,15 +136,15 @@ class DefaultContentManager implements DefaultContentManagerInterface {
       foreach($sorted as $vertex) {
         if (!empty($file_map[$vertex->link])) {
           $file = $file_map[$vertex->link];
-          $entity_type = $file->entity_type;
-          $resource = $this->resourcePluginManager->getInstance(array('id' => 'entity:' . $entity_type));
+          $entity_type_id = $file->entity_type_id;
+          $resource = $this->resourcePluginManager->getInstance(array('id' => 'entity:' . $entity_type_id));
           $definition = $resource->getPluginDefinition();
           $contents = $this->parseFile($file);
           $class = $definition['serialization_class'];
-          $unserialized = $this->serializer->deserialize($contents, $class, 'hal_json', array('request_method' => 'POST'));
-          $unserialized->enforceIsNew(TRUE);
-          $resource->post(NULL, $unserialized);
-          $created[] = $unserialized;
+          $entity = $this->serializer->deserialize($contents, $class, 'hal_json', array('request_method' => 'POST'));
+          $entity->enforceIsNew(TRUE);
+          $entity->save();
+          $created[] = $entity;
         }
       }
     }
@@ -181,10 +189,29 @@ class DefaultContentManager implements DefaultContentManagerInterface {
 
   protected function resetTree() {
     $this->tree = FALSE;
+    $this->vertexes = array();
   }
 
   protected function sortTree() {
     return DepthFirst::toposort($this->tree());
+  }
+
+  /**
+   * Returns a vertex object for a given item link.
+   *
+   * Ensures that the same object is returned for the same item link.
+   *
+   * @param string $item_link
+   *   The item link as a string.
+   *
+   * @return object
+   *   The vertex object.
+   */
+  protected function getVertex($item_link) {
+    if (!isset($this->vertexes[$item_link])) {
+      $this->vertexes[$item_link] = (object) array('link' => $item_link);
+    }
+    return $this->vertexes[$item_link];
   }
 
 }
