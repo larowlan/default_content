@@ -63,6 +63,13 @@ class DefaultContentManager implements DefaultContentManagerInterface {
   protected $tree = FALSE;
 
   /**
+   * A list of vertex objects keyed by their link.
+   *
+   * @var array
+   */
+  protected $vertexes = array();
+
+  /**
    * Constructs the default content manager.
    *
    * @param \Symfony\Component\Serializer\Serializer $serializer
@@ -111,7 +118,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
           // Store the file in the file map.
           $file_map[$self] = $file;
           // Create a vertex for the graph.
-          $vertex = (object) array('link' => $self);
+          $vertex = $this->getVertex($self);
           if (empty($decoded['_embedded'])) {
             // No dependencies to resolve.
             continue;
@@ -119,9 +126,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
           // Here we need to resolve our dependencies;
           foreach ($decoded['_embedded'] as $embedded) {
             $item = reset($embedded);
-            $item_link = $item['_links']['self']['href'];
-            $embedded_vertex = (object) array('link' => $item_link);
-            $this->tree()->addDirectedEdge($vertex, $embedded_vertex);
+            $this->tree()->addDirectedEdge($vertex, $this->getVertex($item['_links']['self']['href']));
           }
         }
       }
@@ -188,6 +193,24 @@ class DefaultContentManager implements DefaultContentManagerInterface {
 
   protected function sortTree() {
     return DepthFirst::toposort($this->tree());
+  }
+
+  /**
+   * Returns a vertex object for a given item link.
+   *
+   * Ensures that the same object is returned for the same item link.
+   *
+   * @param string $item_link
+   *   The item link as a string.
+   *
+   * @return object
+   *   The vertex object.
+   */
+  protected function getVertex($item_link) {
+    if (!isset($this->vertexes[$item_link])) {
+      $this->vertexes[$item_link] = (object) array('link' => $item_link);
+    }
+    return $this->vertexes[$item_link];
   }
 
 }
