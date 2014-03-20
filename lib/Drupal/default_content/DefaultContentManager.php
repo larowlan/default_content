@@ -119,6 +119,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
           $file_map[$self] = $file;
           // Create a vertex for the graph.
           $vertex = $this->getVertex($self);
+          $this->tree()->addVertex($vertex);
           if (empty($decoded['_embedded'])) {
             // No dependencies to resolve.
             continue;
