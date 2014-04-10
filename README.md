@@ -11,11 +11,11 @@ Any module that requires default content can put hal+json versions of the entiti
 
 For example see default_content_test which has
 
-* modules/default_content/test/content
-* modules/default_content/test/content/node
-* modules/default_content/test/content/node/imported.json
-* modules/default_content/test/content/taxonomy_term
-* modules/default_content/test/content/taxonomy_term/tag.json
+* modules/default_content_test/content
+* modules/default_content_test/content/node
+* modules/default_content_test/content/node/imported.json
+* modules/default_content_test/content/taxonomy_term
+* modules/default_content_test/content/taxonomy_term/tag.json
 
 At the moment these files need to be hand-created or exported using the Rest, Hal and Serialization modules.
 Note that the default functionality of the Hal module is to make all links point to the origin site's FDQN.
