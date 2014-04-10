@@ -4,11 +4,7 @@ services:
     arguments: ['@serializer', '@plugin.manager.rest', '@current_user', '@entity.manager']
   default_content.link_manager.type:
       class: Drupal\default_content\LinkManager\TypeLinkManager
-      arguments: ['@cache.cache']
+      arguments: ['@cache.default']
   default_content.link_manager.relation:
       class: Drupal\default_content\LinkManager\RelationLinkManager
-      arguments: ['@cache.cache', '@entity.manager']
-  default_content.entity_resolver.target_id:
-    class: Drupal\default_content\TargetIdResolver
-    tags:
-      - { name: entity_resolver}
+      arguments: ['@cache.default', '@entity.manager']
