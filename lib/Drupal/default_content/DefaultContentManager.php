@@ -126,8 +126,9 @@ class DefaultContentManager implements DefaultContentManagerInterface {
           }
           // Here we need to resolve our dependencies;
           foreach ($decoded['_embedded'] as $embedded) {
-            $item = reset($embedded);
-            $this->tree()->addDirectedEdge($vertex, $this->getVertex($item['_links']['self']['href']));
+            foreach ($embedded as $item) {
+              $this->tree()->addDirectedEdge($vertex, $this->getVertex($item['_links']['self']['href']));
+            }
           }
         }
       }
