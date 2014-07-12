@@ -4,10 +4,16 @@
  * @file
  * Contains \Drupal\default_content\Tests\DefaultContentTest.
  */
+
 namespace Drupal\default_content\Tests;
 
 use Drupal\simpletest\WebTestBase;
 
+/**
+ * Test import of default content.
+ *
+ * @group Default Content
+ */
 class DefaultContentTest extends WebTestBase {
 
   /**
@@ -16,17 +22,6 @@ class DefaultContentTest extends WebTestBase {
    * @var array
    */
   public static $modules = array('rest', 'taxonomy', 'hal', 'default_content');
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getInfo() {
-    return array(
-      'name' => 'Default content test',
-      'description' => 'Test import of default content.',
-      'group' => 'Default Content',
-    );
-  }
 
   /**
    * {@inheritdoc}
