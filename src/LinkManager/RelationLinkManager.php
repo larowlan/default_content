@@ -69,7 +69,7 @@ class RelationLinkManager extends RestRelationLinkManager {
 
     // These URIs only change when field info changes, so cache it permanently
     // and only clear it when field_info is cleared.
-    $this->cache->set('rest:links:relations', $data, CacheBackendInterface::CACHE_PERMANENT, array('field_info' => TRUE));
+    $this->cache->set('rest:links:relations', $data, CacheBackendInterface::CACHE_PERMANENT, array('field_info'));
   }
 
 }
