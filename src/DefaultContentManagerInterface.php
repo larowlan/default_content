@@ -31,4 +31,17 @@ interface DefaultContentManagerInterface {
    */
   public function importContent($module);
 
+  /**
+   * Exports a single entity as importContent expects it.
+   *
+   * @param string $entity_type_id
+   *   The entity type ID.
+   * @param $entity_id
+   *   The entity ID to export.
+   *
+   * @return string
+   *   The rendered export as hal.
+   */
+  public function exportContent($entity_type_id, $entity_id);
+
 }

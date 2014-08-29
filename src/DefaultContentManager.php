@@ -156,6 +156,16 @@ class DefaultContentManager implements DefaultContentManagerInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function exportContent($entity_type_id, $entity_id) {
+    $storage = $this->entityManager->getStorage($entity_type_id);
+    $entity = $storage->load($entity_id);
+
+    return $this->serializer->serialize($entity, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
+  }
+
+  /**
    * Utility to get a default content scanner
    *
    * @return \Drupal\default_content\DefaultContentScanner
