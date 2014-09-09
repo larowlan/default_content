@@ -44,4 +44,17 @@ interface DefaultContentManagerInterface {
    */
   public function exportContent($entity_type_id, $entity_id);
 
+  /**
+   * Exports a single entity and all its referenced entity.
+   *
+   * @param string $entity_type_id
+   *   The entity type ID.
+   * @param $entity_id
+   *   The entity ID to export.
+   *
+   * @return string[][]
+   *   The serialized entities keyed by entity type and UUID.
+   */
+  public function exportContentWithReferences($entity_type_id, $entity_id);
+
 }

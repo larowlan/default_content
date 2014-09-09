@@ -7,7 +7,11 @@
 
 namespace Drupal\default_content;
 
+use Drupal\Core\Config\Entity\ConfigEntityInterface;
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityManager;
+use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
+use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\rest\Plugin\Type\ResourcePluginManager;
 use Gliph\Graph\DirectedAdjacencyList;
@@ -163,6 +167,57 @@ class DefaultContentManager implements DefaultContentManagerInterface {
     $entity = $storage->load($entity_id);
 
     return $this->serializer->serialize($entity, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function exportContentWithReferences($entity_type_id, $entity_id) {
+    $storage = $this->entityManager->getStorage($entity_type_id);
+    $entity = $storage->load($entity_id);
+    /** @var \Drupal\Core\Entity\ContentEntityInterface[] $entities */
+    $entities = [$entity];
+    $entities = array_merge($entities, $this->getEntityReferencesRecursive($entity));
+
+    $serialized_entities_per_type = [];
+    // Serialize all entities and key them by entity TYPE and uuid.
+    foreach ($entities as $entity) {
+      $serialized_entities_per_type[$entity->getEntityTypeId()][$entity->uuid()] = $this->serializer->serialize($entity, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
+    }
+    return $serialized_entities_per_type;
+  }
+
+  /**
+   * Returns all referenced entities of an entity.
+   *
+   * This method is also recursive to support usecases like a node -> media
+   * -> file.
+   *
+   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
+   *   The entity.
+   * @param int $depth
+   *   Guard against infinite recursion.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface[]
+   */
+  protected function getEntityReferencesRecursive(ContentEntityInterface $entity, $depth = 0) {
+    $entity_dependencies = $entity->referencedEntities();
+
+    foreach ($entity_dependencies as $id => $dependent_entity) {
+      // Config entities should not be exported but rather provided by default
+      // config.
+      if ($dependent_entity instanceof ConfigEntityInterface) {
+        unset($entity_dependencies[$id]);
+      }
+      $entity_dependencies = array_merge($entity_dependencies, $this->getEntityReferencesRecursive($dependent_entity, $depth + 1));
+    }
+
+    // Build in some support against infinite recursion.
+    if ($depth > 5) {
+      return $entity_dependencies;
+    }
+
+    return array_unique($entity_dependencies);
   }
 
   /**
