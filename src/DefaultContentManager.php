@@ -7,6 +7,7 @@
 
 namespace Drupal\default_content;
 
+use Drupal\Component\Utility\String;
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityManager;
@@ -175,8 +176,14 @@ class DefaultContentManager implements DefaultContentManagerInterface {
   public function exportContentWithReferences($entity_type_id, $entity_id) {
     $storage = $this->entityManager->getStorage($entity_type_id);
     $entity = $storage->load($entity_id);
+
+    if (!$entity) {
+      throw new \InvalidArgumentException(String::format('Entity @type with ID @id does not exist', ['@type' => $entity_type_id, '@id' => $entity_id]));
+    }
+
     /** @var \Drupal\Core\Entity\ContentEntityInterface[] $entities */
     $entities = [$entity];
+
     $entities = array_merge($entities, $this->getEntityReferencesRecursive($entity));
 
     $serialized_entities_per_type = [];
@@ -217,7 +224,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
       return $entity_dependencies;
     }
 
-    return array_unique($entity_dependencies);
+    return array_unique($entity_dependencies, SORT_REGULAR);
   }
 
   /**
