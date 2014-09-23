@@ -11,8 +11,6 @@ use Drupal\Component\Utility\String;
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityManager;
-use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
-use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\rest\Plugin\Type\ResourcePluginManager;
 use Gliph\Graph\DirectedAdjacencyList;
@@ -216,7 +214,9 @@ class DefaultContentManager implements DefaultContentManagerInterface {
       if ($dependent_entity instanceof ConfigEntityInterface) {
         unset($entity_dependencies[$id]);
       }
-      $entity_dependencies = array_merge($entity_dependencies, $this->getEntityReferencesRecursive($dependent_entity, $depth + 1));
+      else {
+        $entity_dependencies = array_merge($entity_dependencies, $this->getEntityReferencesRecursive($dependent_entity, $depth + 1));
+      }
     }
 
     // Build in some support against infinite recursion.

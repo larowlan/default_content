@@ -18,7 +18,7 @@ function default_content_drush_command() {
     'options' => [
       'file' => dt('Write out the exported content to a file instead of stdout'),
     ],
-    'aliases' => array('dce'),
+    'aliases' => ['dce'],
     'required-arguments' => 2,
   ];
   $items['default-content-export-references'] = [
@@ -30,7 +30,7 @@ function default_content_drush_command() {
     'options' => [
       'folder' => dt('Folder to export to, entities are grouped by entity type into directories.'),
     ],
-    'aliases' => array('dcer'),
+    'aliases' => ['dcer'],
     'required-arguments' => 2,
   ];
 
@@ -63,7 +63,7 @@ function drush_default_content_export($entity_type_id, $entity_id) {
  *
  * @param string $entity_type_id
  *   The entity type ID.
- * @param $entity_id
+ * @param mixed $entity_id
  *   The entity ID to export.
  */
 function drush_default_content_export_references($entity_type_id, $entity_id) {
