@@ -30,3 +30,5 @@ To do
 =====
 
 UI for easily exporting?
+
+[![Build Status](https://travis-ci.org/larowlan/default_content.svg?branch=8.x-1.x)](https://travis-ci.org/larowlan/default_content)
