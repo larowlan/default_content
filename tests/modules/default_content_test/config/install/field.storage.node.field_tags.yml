@@ -2,7 +2,6 @@ id: node.field_tags
 uuid: A071BBC8-924B-4100-9BF4-3036D9BBDCF3
 status: true
 langcode: en
-name: field_tags
 entity_type: node
 type: taxonomy_term_reference
 settings:
