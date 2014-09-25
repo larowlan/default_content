@@ -7,6 +7,7 @@
 namespace Drupal\default_content\Tests;
 
 use Drupal\simpletest\WebTestBase;
+use Drupal\taxonomy\Entity\Vocabulary;
 
 /**
  * Test import of default content.
@@ -44,7 +45,7 @@ class DefaultContentTest extends WebTestBase {
     // Content is always imported as anonymous.
     $this->assertEqual($node->uid->target_id, 0);
     $this->assertEqual($node->getType(), 'page');
-    $terms = \Drupal::entityManager()->getStorageController('taxonomy_term')->loadMultiple();
+    $terms = \Drupal::entityManager()->getStorage('taxonomy_term')->loadMultiple();
     $term = reset($terms);
     $this->assertTrue(!empty($term));
     $this->assertEqual($term->name->value, 'A tag');

@@ -3,6 +3,7 @@ uuid: F6002796-DE9D-4F8B-A8A5-693B7494C125
 status: true
 langcode: en
 field_uuid: A071BBC8-924B-4100-9BF4-3036D9BBDCF3
+field_name: field_tags
 entity_type: node
 bundle: page
 label: Tags
@@ -12,3 +13,7 @@ default_value: {  }
 default_value_function: ''
 settings: {  }
 field_type: taxonomy_term_reference
+dependencies:
+  entity:
+    - field.storage.node.field_tags
+    - node.type.page
