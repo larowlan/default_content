@@ -9,6 +9,12 @@
  * Implements hook_drush_command().
  */
 function default_content_drush_command() {
+  $items['default-content-import-all'] = [
+    'description' => dt('Imports all available default content'),
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
+    'core' => ['8+'],
+    'aliases' => ['dcoi'],
+  ];
   $items['default-content-export'] = [
     'description' => dt('Exports a single entity'),
     'arguments' => [
@@ -22,6 +28,20 @@ function default_content_drush_command() {
   ];
 
   return $items;
+}
+
+/**
+ * Imports all default content provided by all modules.
+ */
+function drush_default_content_import() {
+  $modules = \Drupal::moduleHandler()->getModuleList();
+  /** @var \Drupal\default_content\DefaultContentManagerInterface $default_content_manager */
+  $default_content_manager = \Drupal::service('default_content.manager');
+  foreach ($modules as $module_name => $module) {
+    $default_content_manager->importContent($module_name);
+  }
+
+  drush_print('Content imported');
 }
 
 /**
