@@ -77,10 +77,15 @@ class DefaultContentManagerIntegrationTest extends KernelTestBase {
 
     $user = User::create(['name' => 'my username']);
     $user->save();
+    // Reload the user to get the proper casted values from the DB.
+    $user = User::load($user->id());
+
     $node_type = NodeType::create(['type' => 'test']);
     $node_type->save();
     $node = Node::create(['type' => $node_type->id(), 'title' => 'test node', 'uid' => $user->id()]);
     $node->save();
+    // Reload the node to get the proper casted values from the DB.
+    $node = Node::load($node->id());
 
     /** @var \Symfony\Component\Serializer\Serializer $serializer */
     $serializer = \Drupal::service('serializer');
