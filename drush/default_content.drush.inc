@@ -9,7 +9,7 @@
  * Implements hook_drush_command().
  */
 function default_content_drush_command() {
-  $items['default-content-import-all'] = [
+  $items['default-content-import'] = [
     'description' => dt('Imports all available default content'),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
     'core' => ['8+'],
