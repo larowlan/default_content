@@ -115,7 +115,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
           // Decode the file contents.
           $decoded = $this->serializer->decode($contents, 'hal_json');
           // Get the link to this entity.
-          $self = $decoded['_links']['self']['href'];
+          $self = $decoded['uuid'][0]['value'];
           // Store the entity type with the file.
           $file->entity_type_id = $entity_type_id;
           // Store the file in the file map.
@@ -130,7 +130,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
           // Here we need to resolve our dependencies;
           foreach ($decoded['_embedded'] as $embedded) {
             foreach ($embedded as $item) {
-              $this->tree()->addDirectedEdge($vertex, $this->getVertex($item['_links']['self']['href']));
+              $this->tree()->addDirectedEdge($vertex, $this->getVertex($item['uuid'][0]['value']));
             }
           }
         }
