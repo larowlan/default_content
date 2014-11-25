@@ -116,6 +116,17 @@ class DefaultContentManager implements DefaultContentManagerInterface {
           $decoded = $this->serializer->decode($contents, 'hal_json');
           // Get the link to this entity.
           $self = $decoded['_links']['self']['href'];
+
+          // Throw an exception when this URL already exists.
+          if (isset($file_map[$self])) {
+            $args = array(
+              '@href' => $self,
+              '@first' => $file_map[$self]->uri,
+              '@second' => $file->uri,
+            );
+            throw new \Exception(String::format('Default content with href @href exists twice: @first @second', $args));
+          }
+
           // Store the entity type with the file.
           $file->entity_type_id = $entity_type_id;
           // Store the file in the file map.
