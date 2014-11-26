@@ -38,7 +38,7 @@ class DefaultContentTest extends WebTestBase {
     // Login as admin.
     $this->drupalLogin($this->drupalCreateUser(array_keys(\Drupal::moduleHandler()->invokeAll(('permission')))));
     // Enable the module and import the content.
-    \Drupal::moduleHandler()->install(array('default_content_test'), TRUE);
+    \Drupal::service('module_installer')->install(array('default_content_test'), TRUE);
     $this->rebuildContainer();
     $node = $this->drupalGetNodeByTitle('Imported node');
     $this->assertEqual($node->body->value, 'Crikey it works!');

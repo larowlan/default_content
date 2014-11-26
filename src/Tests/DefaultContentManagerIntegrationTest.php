@@ -45,7 +45,7 @@ class DefaultContentManagerIntegrationTest extends KernelTestBase {
    * Tests exportContent().
    */
   public function testExportContent() {
-    \Drupal::moduleHandler()->install(['taxonomy', 'default_content']);
+    \Drupal::service('module_installer')->install(['taxonomy', 'default_content']);
     \Drupal::service('router.builder')->rebuild();
     $this->defaultContentManager = \Drupal::service('default_content.manager');
 
@@ -71,7 +71,7 @@ class DefaultContentManagerIntegrationTest extends KernelTestBase {
    * Tests exportContentWithReferences().
    */
   public function testExportWithReferences() {
-    \Drupal::moduleHandler()->install(['node', 'default_content']);
+    \Drupal::service('module_installer')->install(['node', 'default_content']);
     \Drupal::service('router.builder')->rebuild();
     $this->defaultContentManager = \Drupal::service('default_content.manager');
 
