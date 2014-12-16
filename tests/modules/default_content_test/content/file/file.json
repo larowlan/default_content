@@ -1,7 +1,7 @@
 {
   "_links": {
     "self": {
-      "href": "http:\/\/localhost\/sites\/default\/files\/test_file.txt"
+      "href": "https:\/\/www.drupal.org\/CHANGELOG.txt"
     },
     "type": {
       "href": "http:\/\/drupal.org\/rest\/type\/file\/file"
@@ -48,7 +48,7 @@
   ],
   "uri": [
     {
-      "value": "http:\/\/localhost\/sites\/default\/files\/test_file.txt"
+      "value": "https:\/\/www.drupal.org\/CHANGELOG.txt"
     }
   ],
   "filemime": [

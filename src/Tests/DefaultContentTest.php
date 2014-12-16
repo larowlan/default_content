@@ -38,9 +38,6 @@ class DefaultContentTest extends WebTestBase {
     touch('public://test_file.txt');
     // Login as admin.
     $this->drupalLogin($this->drupalCreateUser(array_keys(\Drupal::moduleHandler()->invokeAll(('permission')))));
-    $old_path = 'sites\/default\/files';
-    $new_path = str_replace('/', '\/', $this->public_files_directory);
-    file_put_contents('module://default_content_test/content/file/file.json', str_replace($old_path, $new_path, file_get_contents('module://default_content_test/content/file/file.json')));
     // Enable the module and import the content.
     \Drupal::service('module_installer')->install(array('default_content_test'), TRUE);
     $this->rebuildContainer();
@@ -55,6 +52,7 @@ class DefaultContentTest extends WebTestBase {
     $this->assertEqual($term->name->value, 'A tag');
     $term_id = $node->field_tags->target_id;
     $this->assertTrue(!empty($term_id), 'Term reference populated');
+
   }
 
 }
