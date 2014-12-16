@@ -35,7 +35,6 @@ class DefaultContentTest extends WebTestBase {
    * Test importing default content.
    */
   public function testImport() {
-    touch('public://test_file.txt');
     // Login as admin.
     $this->drupalLogin($this->drupalCreateUser(array_keys(\Drupal::moduleHandler()->invokeAll(('permission')))));
     // Enable the module and import the content.
@@ -52,7 +51,6 @@ class DefaultContentTest extends WebTestBase {
     $this->assertEqual($term->name->value, 'A tag');
     $term_id = $node->field_tags->target_id;
     $this->assertTrue(!empty($term_id), 'Term reference populated');
-
   }
 
 }
