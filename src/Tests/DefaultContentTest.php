@@ -21,7 +21,7 @@ class DefaultContentTest extends WebTestBase {
    *
    * @var array
    */
-  public static $modules = array('rest', 'taxonomy', 'hal', 'default_content');
+  public static $modules = array('rest', 'taxonomy', 'hal', 'default_content', 'file');
 
   /**
    * {@inheritdoc}
