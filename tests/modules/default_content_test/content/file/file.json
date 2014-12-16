@@ -1,7 +1,7 @@
 {
   "_links": {
     "self": {
-      "href": "http:\/\/podcasts.dev\/sites\/default\/files\/test_file.txt"
+      "href": "http:\/\/localhost\/sites\/default\/files\/test_file.txt"
     },
     "type": {
       "href": "http:\/\/drupal.org\/rest\/type\/file\/file"
@@ -48,7 +48,7 @@
   ],
   "uri": [
     {
-      "value": "http:\/\/podcasts.dev\/sites\/default\/files\/test_file.txt"
+      "value": "http:\/\/localhost\/sites\/default\/files\/test_file.txt"
     }
   ],
   "filemime": [

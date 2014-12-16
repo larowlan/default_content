@@ -35,6 +35,7 @@ class DefaultContentTest extends WebTestBase {
    * Test importing default content.
    */
   public function testImport() {
+    touch('public://test_file.txt');
     // Login as admin.
     $this->drupalLogin($this->drupalCreateUser(array_keys(\Drupal::moduleHandler()->invokeAll(('permission')))));
     // Enable the module and import the content.
