@@ -1,0 +1,28 @@
+id: node.page.field_file
+uuid: 22d7955e-9e24-4487-a000-c86aab52e315
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_file
+    - node.type.page
+  module:
+    - file
+id: node.page.field_file
+field_name: field_file
+entity_type: node
+bundle: page
+label: File
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  file_directory: ''
+  file_extensions: txt
+  max_filesize: ''
+  description_field: false
+  handler: default
+third_party_settings: {  }
+field_type: file

@@ -1,128 +1,155 @@
 {
-    "_links": {
-        "self": {
-            "href": "http://drupal.org/node/1"
-        },
-        "type": {
-            "href": "http://drupal.org/rest/type/node/page"
-        },
-        "http://drupal.org/rest/relation/node/page/uid": [
-            {
-                "href": "http://drupal.org/user/1"
-            }
-        ],
-        "http://drupal.org/rest/relation/node/page/revision_uid": [
-            {
-                "href": "http://drupal.org/user/1"
-            }
-        ],
-        "http://drupal.org/rest/relation/node/page/field_tags":[
-            {
-                "href":"http://drupal.org/taxonomy/term/1"
-            }
-        ]
+  "_links": {
+    "self": {
+      "href": "http:\/\/podcasts.dev\/node\/2"
     },
-    "uuid": [
-        {
-            "value": "65c412a3-b83f-4efb-8a05-5a6ecea10ad4"
-        }
-    ],
-    "type": [
-        {
-            "target_id": "page"
-        }
-    ],
-    "langcode": [
-        {
-            "value": "en"
-        }
-    ],
-    "title": [
-        {
-            "value": "Imported node"
-        }
-    ],
-    "body": [
-        {
-            "value": "Crikey it works!"
-        }
-    ],
-    "_embedded": {
-        "http://drupal.org/rest/relation/node/page/uid": [
-            {
-                "_links": {
-                    "self": {
-                        "href": "http://drupal.org/user/1"
-                    },
-                    "type": {
-                        "href": "http://drupal.org/rest/type/user/user"
-                    }
-                }
-            }
-        ],
-        "http://drupal.org/rest/relation/node/page/revision_uid": [
-            {
-                "_links": {
-                    "self": {
-                        "href": "http://drupal.org/user/1"
-                    },
-                    "type": {
-                        "href": "http://drupal.org/rest/type/user/user"
-                    }
-                }
-            }
-        ],
-        "http://drupal.org/rest/relation/node/page/field_tags": [
-            {
-                "_links":{
-                    "self":{
-                        "href":"http://drupal.org/taxonomy/term/1"
-                    },
-                    "type":{
-                        "href":"http://drupal.org/rest/type/taxonomy_term/tags"
-                    }
-                },
-                "uuid":[
-                    {
-                        "value":"550f86ad-aa11-4047-953f-636d42889f85"
-                    }
-                ]
-            }
-        ]
+    "type": {
+      "href": "http:\/\/drupal.org\/rest\/type\/node\/page"
     },
-    "status": [
-        {
-            "value": "1"
-        }
+    "http:\/\/drupal.org\/rest\/relation\/node\/page\/uid": [
+      {
+        "href": "http:\/\/podcasts.dev\/user\/0",
+        "lang": "en"
+      }
     ],
-    "created": [
-        {
-            "value": "1381645976"
-        }
+    "http:\/\/drupal.org\/rest\/relation\/node\/page\/revision_uid": [
+      {
+        "href": "http:\/\/podcasts.dev\/user\/0"
+      }
     ],
-    "changed": [
-        {
-            "value": "1381646540"
-        }
-    ],
-    "promote": [
-        {
-            "value": "1"
-        }
-    ],
-    "sticky": [
-        {
-            "value": "1"
-        }
-    ],
-    "revision_timestamp": [
-        {
-            "value": "1381646540"
-        }
-    ],
-    "revision_log": [
-        {
-            "value": ""
-        }
+    "http:\/\/drupal.org\/rest\/relation\/node\/page\/field_file": [
+      {
+        "href": "http:\/\/podcasts.dev\/sites\/default\/files\/test_file.txt"
+      }
     ]
+  },
+  "uuid": [
+    {
+      "value": "65c412a3-b83f-4efb-8a05-5a6ecea10ad4"
+    }
+  ],
+  "type": [
+    {
+      "target_id": "page"
+    }
+  ],
+  "langcode": [
+    {
+      "value": "en"
+    }
+  ],
+  "title": [
+    {
+      "value": "Imported node",
+      "lang": "en"
+    }
+  ],
+  "_embedded": {
+    "http:\/\/drupal.org\/rest\/relation\/node\/page\/uid": [
+      {
+        "_links": {
+          "self": {
+            "href": "http:\/\/podcasts.dev\/user\/0"
+          },
+          "type": {
+            "href": "http:\/\/drupal.org\/rest\/type\/user\/user"
+          }
+        },
+        "uuid": [
+          {
+            "value": "eddba746-9f17-48a3-b300-ac7e7d222cf5"
+          }
+        ],
+        "lang": "en"
+      }
+    ],
+    "http:\/\/drupal.org\/rest\/relation\/node\/page\/revision_uid": [
+      {
+        "_links": {
+          "self": {
+            "href": "http:\/\/podcasts.dev\/user\/0"
+          },
+          "type": {
+            "href": "http:\/\/drupal.org\/rest\/type\/user\/user"
+          }
+        },
+        "uuid": [
+          {
+            "value": "eddba746-9f17-48a3-b300-ac7e7d222cf5"
+          }
+        ]
+      }
+    ],
+    "http:\/\/drupal.org\/rest\/relation\/node\/page\/field_file": [
+      {
+        "_links": {
+          "self": {
+            "href": "http:\/\/podcasts.dev\/sites\/default\/files\/test_file.txt"
+          },
+          "type": {
+            "href": "http:\/\/drupal.org\/rest\/type\/file\/file"
+          }
+        },
+        "uuid": [
+          {
+            "value": "f68b82ec-e86e-49f0-8c00-bcf12a739c2f"
+          }
+        ],
+        "uri": [
+          {
+            "value": "http:\/\/podcasts.dev\/sites\/default\/files\/test_file.txt"
+          }
+        ]
+      }
+    ]
+  },
+  "status": [
+    {
+      "value": "1",
+      "lang": "en"
+    }
+  ],
+  "created": [
+    {
+      "value": "1381645976",
+      "lang": "en"
+    }
+  ],
+  "changed": [
+    {
+      "value": "1418717441",
+      "lang": "en"
+    }
+  ],
+  "promote": [
+    {
+      "value": "1",
+      "lang": "en"
+    }
+  ],
+  "sticky": [
+    {
+      "value": "1",
+      "lang": "en"
+    }
+  ],
+  "revision_timestamp": [
+    {
+      "value": "1381646540"
+    }
+  ],
+  "revision_log": [
+    {
+      "value": "",
+      "lang": "en"
+    }
+  ],
+  "body": [
+    {
+      "value": "<p>Crikey it works!<\/p>\r\n",
+      "format": "basic_html",
+      "summary": "",
+      "lang": "en"
+    }
+  ]
 }

@@ -1,0 +1,79 @@
+{
+  "_links": {
+    "self": {
+      "href": "http:\/\/podcasts.dev\/sites\/default\/files\/test_file.txt"
+    },
+    "type": {
+      "href": "http:\/\/drupal.org\/rest\/type\/file\/file"
+    },
+    "http:\/\/drupal.org\/rest\/relation\/file\/file\/uid": [
+      {
+        "href": "http:\/\/podcasts.dev\/user\/1"
+      }
+    ]
+  },
+  "uuid": [
+    {
+      "value": "f68b82ec-e86e-49f0-8c00-bcf12a739c2f"
+    }
+  ],
+  "langcode": [
+    {
+      "value": "en"
+    }
+  ],
+  "_embedded": {
+    "http:\/\/drupal.org\/rest\/relation\/file\/file\/uid": [
+      {
+        "_links": {
+          "self": {
+            "href": "http:\/\/podcasts.dev\/user\/1"
+          },
+          "type": {
+            "href": "http:\/\/drupal.org\/rest\/type\/user\/user"
+          }
+        },
+        "uuid": [
+          {
+            "value": "022015a7-e39b-4c9d-8500-ce7f9a962dde"
+          }
+        ]
+      }
+    ]
+  },
+  "filename": [
+    {
+      "value": "test_file.txt"
+    }
+  ],
+  "uri": [
+    {
+      "value": "http:\/\/podcasts.dev\/sites\/default\/files\/test_file.txt"
+    }
+  ],
+  "filemime": [
+    {
+      "value": "text\/plain"
+    }
+  ],
+  "filesize": [
+    {
+      "value": "14"
+    }
+  ],
+  "status": [
+    {
+      "value": "1"
+    }
+  ],
+  "created": [
+    {
+      "value": "1418717440"
+    }
+  ],
+  "changed": [
+    {
+      "value": "1418717441"
+    }
+  ]
+}

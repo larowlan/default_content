@@ -1,0 +1,24 @@
+id: node.field_file
+uuid: 08ad42ee-9bb8-454a-a100-dccb2e4c685d
+langcode: en
+status: true
+dependencies:
+  module:
+    - file
+    - node
+id: node.field_file
+field_name: field_file
+entity_type: node
+type: file
+settings:
+  display_field: false
+  display_default: false
+  uri_scheme: public
+  target_type: file
+  target_bundle: null
+module: file
+locked: false
+cardinality: 1
+translatable: false
+indexes: {  }
+persist_with_no_fields: false
