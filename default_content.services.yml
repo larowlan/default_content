@@ -4,7 +4,7 @@ services:
     arguments: ['@serializer', '@plugin.manager.rest', '@current_user', '@entity.manager']
   default_content.link_manager.type:
       class: Drupal\default_content\LinkManager\TypeLinkManager
-      arguments: ['@cache.default']
+      arguments: ['@cache.default', '@unrouted_url_assembler']
   default_content.link_manager.relation:
       class: Drupal\default_content\LinkManager\RelationLinkManager
       arguments: ['@cache.default', '@entity.manager']
