@@ -7,7 +7,7 @@
 
 namespace Drupal\default_content;
 
-use Drupal\Component\Utility\String;
+use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityManager;
@@ -124,7 +124,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
               '@first' => $file_map[$self]->uri,
               '@second' => $file->uri,
             );
-            throw new \Exception(String::format('Default content with href @href exists twice: @first @second', $args));
+            throw new \Exception(SafeMarkup::format('Default content with href @href exists twice: @first @second', $args));
           }
 
           // Store the entity type with the file.
@@ -187,7 +187,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
     $entity = $storage->load($entity_id);
 
     if (!$entity) {
-      throw new \InvalidArgumentException(String::format('Entity @type with ID @id does not exist', ['@type' => $entity_type_id, '@id' => $entity_id]));
+      throw new \InvalidArgumentException(SafeMarkup::format('Entity @type with ID @id does not exist', ['@type' => $entity_type_id, '@id' => $entity_id]));
     }
 
     /** @var \Drupal\Core\Entity\ContentEntityInterface[] $entities */
