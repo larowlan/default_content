@@ -12,6 +12,7 @@ use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityManager;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\rest\LinkManager\LinkManagerInterface;
 use Drupal\rest\Plugin\Type\ResourcePluginManager;
 use Gliph\Graph\DirectedAdjacencyList;
 use Gliph\Traversal\DepthFirst;
@@ -22,6 +23,8 @@ use Symfony\Component\Serializer\Serializer;
  * @todo throw useful exceptions
  */
 class DefaultContentManager implements DefaultContentManagerInterface {
+
+  const LINK_DOMAIN = 'http://drupal.org';
 
   /**
    * The serializer service.
@@ -73,21 +76,31 @@ class DefaultContentManager implements DefaultContentManagerInterface {
   protected $vertexes = array();
 
   /**
+   * The link manager service.
+   *
+   * @var \Drupal\rest\LinkManager\LinkManagerInterface
+   */
+  protected $linkManager;
+
+  /**
    * Constructs the default content manager.
    *
    * @param \Symfony\Component\Serializer\Serializer $serializer
    *   The serializer service.
    * @param \Drupal\rest\Plugin\Type\ResourcePluginManager $resource_plugin_manager
    *   The rest resource plugin manager.
-   * @param \Drupal\Core\Session|AccountInterface $current_user .
+   * @param \Drupal\Core\Session|AccountInterface $current_user
    *   The current user.
    * @param \Drupal\Core\Entity\EntityManager $entity_manager
    *   The entity manager service.
+   * @param \Drupal\rest\LinkManager\LinkManagerInterface $link_manager
+   *   The link manager service.
    */
-  public function __construct(Serializer $serializer, ResourcePluginManager $resource_plugin_manager, AccountInterface $current_user, EntityManager $entity_manager) {
+  public function __construct(Serializer $serializer, ResourcePluginManager $resource_plugin_manager, AccountInterface $current_user, EntityManager $entity_manager, LinkManagerInterface $link_manager) {
     $this->serializer = $serializer;
     $this->resourcePluginManager = $resource_plugin_manager;
     $this->entityManager = $entity_manager;
+    $this->linkManager = $link_manager;
   }
 
   /**
@@ -109,6 +122,9 @@ class DefaultContentManager implements DefaultContentManagerInterface {
           continue;
         }
         $files = $this->scanner()->scan($folder . '/' . $entity_type_id);
+        // Default content uses drupal.org as domain.
+        // @todo Make this use a uri like default-content:.
+        $this->linkManager->setLinkDomain(static::LINK_DOMAIN);
         // Parse all of the files and sort them in order of dependency.
         foreach ($files as $file) {
           $contents = $this->parseFile($file);
@@ -124,6 +140,8 @@ class DefaultContentManager implements DefaultContentManagerInterface {
               '@first' => $file_map[$self]->uri,
               '@second' => $file->uri,
             );
+            // Reset link domain.
+            $this->linkManager->setLinkDomain(FALSE);
             throw new \Exception(SafeMarkup::format('Default content with href @href exists twice: @first @second', $args));
           }
 
@@ -149,7 +167,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
 
       // @todo what if no dependencies?
       $sorted = $this->sortTree();
-      foreach($sorted as $vertex) {
+      foreach ($sorted as $vertex) {
         if (!empty($file_map[$vertex->link])) {
           $file = $file_map[$vertex->link];
           $entity_type_id = $file->entity_type_id;
@@ -166,6 +184,8 @@ class DefaultContentManager implements DefaultContentManagerInterface {
     }
     // Reset the tree.
     $this->resetTree();
+    // Reset link domain.
+    $this->linkManager->setLinkDomain(FALSE);
     return $created;
   }
 
@@ -176,7 +196,11 @@ class DefaultContentManager implements DefaultContentManagerInterface {
     $storage = $this->entityManager->getStorage($entity_type_id);
     $entity = $storage->load($entity_id);
 
-    return $this->serializer->serialize($entity, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
+    $this->linkManager->setLinkDomain(static::LINK_DOMAIN);
+    $return = $this->serializer->serialize($entity, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
+    // Reset link domain.
+    $this->linkManager->setLinkDomain(FALSE);
+    return $return;
   }
 
   /**
@@ -196,10 +220,13 @@ class DefaultContentManager implements DefaultContentManagerInterface {
     $entities = array_merge($entities, $this->getEntityReferencesRecursive($entity));
 
     $serialized_entities_per_type = [];
+    $this->linkManager->setLinkDomain(static::LINK_DOMAIN);
     // Serialize all entities and key them by entity TYPE and uuid.
     foreach ($entities as $entity) {
       $serialized_entities_per_type[$entity->getEntityTypeId()][$entity->uuid()] = $this->serializer->serialize($entity, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
     }
+    $this->linkManager->setLinkDomain(FALSE);
+
     return $serialized_entities_per_type;
   }
 

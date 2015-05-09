@@ -8,12 +8,12 @@
         },
         "http://drupal.org/rest/relation/node/page/uid": [
             {
-                "href": "http://drupal.org/user/1"
+                "href": "http://drupal.org/user/2"
             }
         ],
         "http://drupal.org/rest/relation/node/page/revision_uid": [
             {
-                "href": "http://drupal.org/user/1"
+                "href": "http://drupal.org/user/2"
             }
         ],
         "http://drupal.org/rest/relation/node/page/field_tags":[

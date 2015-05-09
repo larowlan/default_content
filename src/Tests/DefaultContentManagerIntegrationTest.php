@@ -7,6 +7,7 @@
 
 namespace Drupal\default_content\Tests;
 
+use Drupal\default_content\DefaultContentManager;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\simpletest\KernelTestBase;
@@ -57,6 +58,7 @@ class DefaultContentManagerIntegrationTest extends KernelTestBase {
 
     /** @var \Symfony\Component\Serializer\Serializer $serializer */
     $serializer = \Drupal::service('serializer');
+    \Drupal::service('rest.link_manager')->setLinkDomain(DefaultContentManager::LINK_DOMAIN);
     $expected = $serializer->serialize($term, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
 
     $exported = $this->defaultContentManager->exportContent('taxonomy_term', $term->id());
@@ -89,6 +91,7 @@ class DefaultContentManagerIntegrationTest extends KernelTestBase {
 
     /** @var \Symfony\Component\Serializer\Serializer $serializer */
     $serializer = \Drupal::service('serializer');
+    \Drupal::service('rest.link_manager')->setLinkDomain(DefaultContentManager::LINK_DOMAIN);
     $expected_node = $serializer->serialize($node, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
     $expected_user = $serializer->serialize($user, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
 
