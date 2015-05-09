@@ -6,7 +6,7 @@ entity_type: node
 bundle: page
 label: Tags
 description: 'Select the tag.'
-required: 1
+required: true
 default_value: {  }
 default_value_function: ''
 settings:

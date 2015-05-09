@@ -10,7 +10,7 @@ settings:
 module: taxonomy
 active: true
 locked: false
-cardinality: '1'
+cardinality: 1
 translatable: false
 indexes: {  }
 dependencies:
