@@ -34,7 +34,29 @@ function default_content_drush_command() {
     'required-arguments' => 2,
   ];
 
+  $items['default-content-bulk-export'] = [
+    'description' => dt('Bulk export for the whole content type entities.'),
+    'aliases' => ['dcebe'],
+    'arguments' => [
+      'entity_type' => dt('The entity type to export.'),
+    ],
+    'options' => [
+      'file' => dt('Write out the exported content to a file instead of stdout'),
+    ],
+  ];
+
+  $items['default-content-import'] = [
+    'description' => dt('Import content.'),
+    'aliases' => ['dcei']
+  ];
+
   return $items;
+}
+
+function drush_default_content_import() {
+
+  \Drupal::service('default_content.manager')->importContent('whatever');;
+
 }
 
 /**
@@ -46,16 +68,31 @@ function default_content_drush_command() {
  *   The entity ID to export.
  */
 function drush_default_content_export($entity_type_id, $entity_id) {
-  /** @var \Drupal\default_content\DefaultContentManagerInterface $manager */
-  $manager = \Drupal::service('default_content.manager');
-  $export = $manager->exportContent($entity_type_id, $entity_id);
-
+  $export = _export_entity($entity_type_id, $entity_id);
   if ($file = drush_get_option('file')) {
     file_put_contents($file, $export);
   }
   else {
     drush_print($export);
   }
+}
+
+function _export_entity($entity_type_id, $entity_id) {
+  /** @var \Drupal\default_content\DefaultContentManagerInterface $manager */
+  $manager = \Drupal::service('default_content.manager');
+  return $manager->exportContent($entity_type_id, $entity_id);
+}
+
+function drush_default_content_bulk_export($content_type) {
+
+  $storage = \Drupal::entityManager()->getStorage($content_type);
+  $entities = $storage->loadMultiple();
+
+  foreach($entities as $entity) {
+    $export = _export_entity($content_type, $entity->id());
+    file_put_contents('test.yml', $export, FILE_APPEND);
+  }
+
 }
 
 /**
