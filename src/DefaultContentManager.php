@@ -116,9 +116,9 @@ class DefaultContentManager implements DefaultContentManagerInterface {
       foreach ($this->entityManager->getDefinitions() as $entity_type_id => $entity_type) {
         $reflection = new \ReflectionClass($entity_type->getClass());
         // We are only interested in importing content entities.
-//        if ($reflection->implementsInterface('\Drupal\Core\Config\Entity\ConfigEntityInterface')) {
-//          continue;
-//        }
+        if ($reflection->implementsInterface('\Drupal\Core\Config\Entity\ConfigEntityInterface')) {
+          continue;
+        }
         if (!file_exists($folder . '/' . $entity_type_id)) {
           continue;
         }
