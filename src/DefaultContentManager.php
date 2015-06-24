@@ -11,6 +11,7 @@ use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityManager;
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\rest\LinkManager\LinkManagerInterface;
 use Drupal\rest\Plugin\Type\ResourcePluginManager;
@@ -177,8 +178,15 @@ class DefaultContentManager implements DefaultContentManagerInterface {
           $class = $definition['serialization_class'];
           $entity = $this->serializer->deserialize($contents, $class, 'hal_json', array('request_method' => 'POST'));
           $entity->enforceIsNew(TRUE);
-          $entity->save();
-          $created[] = $entity;
+          /**
+           * workaround for existing entities
+           */
+          try{
+            $entity->save();
+            $created[] = $entity;
+          } catch(EntityStorageException $e) {
+            // no nothing if the entity is already present
+          }
         }
       }
     }

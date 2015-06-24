@@ -87,10 +87,14 @@ function drush_default_content_bulk_export($content_type) {
 
   $storage = \Drupal::entityManager()->getStorage($content_type);
   $entities = $storage->loadMultiple();
+  $folder = DRUPAL_ROOT . '/../config/staging/content';
 
   foreach($entities as $entity) {
     $export = _export_entity($content_type, $entity->id());
-    file_put_contents('test.yml', $export, FILE_APPEND);
+    if(!is_dir($folder . '/' . $content_type)) {
+      mkdir($folder . '/' . $content_type);
+    }
+    file_put_contents($folder. '/' . $content_type . '/' . $entity->id() . '.json', $export, FILE_APPEND);
   }
 
 }
