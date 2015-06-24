@@ -11,6 +11,7 @@ use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityManager;
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\rest\LinkManager\LinkManagerInterface;
 use Drupal\rest\Plugin\Type\ResourcePluginManager;
@@ -108,16 +109,16 @@ class DefaultContentManager implements DefaultContentManagerInterface {
    */
   public function importContent($module) {
     $created = array();
-    $folder = drupal_get_path('module', $module) . "/content";
+    $folder = '/var/www/html/tourist-mannheim/config/staging/content';//drupal_get_path('module', $module) . "/content";
 
     if (file_exists($folder)) {
       $file_map = array();
       foreach ($this->entityManager->getDefinitions() as $entity_type_id => $entity_type) {
         $reflection = new \ReflectionClass($entity_type->getClass());
         // We are only interested in importing content entities.
-        if ($reflection->implementsInterface('\Drupal\Core\Config\Entity\ConfigEntityInterface')) {
-          continue;
-        }
+//        if ($reflection->implementsInterface('\Drupal\Core\Config\Entity\ConfigEntityInterface')) {
+//          continue;
+//        }
         if (!file_exists($folder . '/' . $entity_type_id)) {
           continue;
         }
@@ -177,8 +178,15 @@ class DefaultContentManager implements DefaultContentManagerInterface {
           $class = $definition['serialization_class'];
           $entity = $this->serializer->deserialize($contents, $class, 'hal_json', array('request_method' => 'POST'));
           $entity->enforceIsNew(TRUE);
-          $entity->save();
-          $created[] = $entity;
+          /**
+           * workaround for existing entities
+           */
+          try{
+            $entity->save();
+            $created[] = $entity;
+          } catch(EntityStorageException $e) {
+            // no nothing if the entity is already present
+          }
         }
       }
     }
