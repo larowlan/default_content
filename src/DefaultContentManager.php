@@ -107,10 +107,8 @@ class DefaultContentManager implements DefaultContentManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function importContent($module) {
+  public function importContent($folder) {
     $created = array();
-    $folder = '/var/www/html/tourist-mannheim/config/staging/content';//drupal_get_path('module', $module) . "/content";
-
     if (file_exists($folder)) {
       $file_map = array();
       foreach ($this->entityManager->getDefinitions() as $entity_type_id => $entity_type) {

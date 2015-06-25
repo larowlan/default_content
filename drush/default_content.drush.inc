@@ -54,9 +54,7 @@ function default_content_drush_command() {
 }
 
 function drush_default_content_import() {
-
-  \Drupal::service('default_content.manager')->importContent('whatever');;
-
+  \Drupal::service('default_content.manager')->importContent(_drush_default_content_get_content_folder());
 }
 
 /**
@@ -88,7 +86,7 @@ function drush_default_content_bulk_export($content_type) {
   $storage = \Drupal::entityManager()->getStorage($content_type);
   $entities = $storage->loadMultiple();
 
-  $content_folder = realpath(config_get_config_directory(CONFIG_STAGING_DIRECTORY)) . '/content';
+  $content_folder = _drush_default_content_get_content_folder();
   file_prepare_directory($content_folder, FILE_CREATE_DIRECTORY);
   $entity_type_folder = $content_folder . '/' . $content_type;
   file_prepare_directory($entity_type_folder, FILE_CREATE_DIRECTORY);
@@ -98,6 +96,10 @@ function drush_default_content_bulk_export($content_type) {
     file_put_contents($entity_type_folder. '/' . $entity->id() . '.json', $export);
   }
 
+}
+
+function _drush_default_content_get_content_folder() {
+  return realpath(config_get_config_directory(CONFIG_STAGING_DIRECTORY)) . '/content';
 }
 
 /**
