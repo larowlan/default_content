@@ -93,7 +93,7 @@ function drush_default_content_bulk_export($content_type) {
 
   foreach($entities as $entity) {
     $export = _export_entity($content_type, $entity->id());
-    file_put_contents($entity_type_folder. '/' . $entity->id() . '.json', $export);
+    file_put_contents($entity_type_folder. '/' . $entity->uuid() . '.json', $export);
   }
 
 }
