@@ -114,7 +114,7 @@ function drush_default_content_export_references($entity_type_id, $entity_id) {
   /** @var \Drupal\default_content\DefaultContentManagerInterface $manager */
   $manager = \Drupal::service('default_content.manager');
 
-  $folder = drush_get_option('folder', '.');
+  $folder = _drush_default_content_get_content_folder();
 
   $serialized_by_type = $manager->exportContentWithReferences($entity_type_id, $entity_id);
   foreach ($serialized_by_type as $entity_type => $serialized_entities) {
