@@ -108,85 +108,124 @@ class DefaultContentManager implements DefaultContentManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function importContent($folder) {
+  public function importContent($module) {
     $created = array();
+    $folder = drupal_get_path('module', $module) . "/content";
     if (file_exists($folder)) {
-      $file_map = array();
-      foreach ($this->entityManager->getDefinitions() as $entity_type_id => $entity_type) {
-        $reflection = new \ReflectionClass($entity_type->getClass());
-        // We are only interested in importing content entities.
-        if ($reflection->implementsInterface('\Drupal\Core\Config\Entity\ConfigEntityInterface')) {
-          continue;
-        }
-        if (!file_exists($folder . '/' . $entity_type_id)) {
-          continue;
-        }
-        $files = $this->scanner()->scan($folder . '/' . $entity_type_id);
-        // Default content uses drupal.org as domain.
-        // @todo Make this use a uri like default-content:.
-        $this->linkManager->setLinkDomain(static::LINK_DOMAIN);
-        // Parse all of the files and sort them in order of dependency.
-        foreach ($files as $file) {
-          $contents = $this->parseFile($file);
-          // Decode the file contents.
-          $decoded = $this->serializer->decode($contents, 'hal_json');
-          // Get the link to this entity.
-          $self = $decoded['_links']['self']['href'];
-
-          // Throw an exception when this URL already exists.
-          if (isset($file_map[$self])) {
-            $args = array(
-              '@href' => $self,
-              '@first' => $file_map[$self]->uri,
-              '@second' => $file->uri,
-            );
-            // Reset link domain.
-            $this->linkManager->setLinkDomain(FALSE);
-            throw new \Exception(SafeMarkup::format('Default content with href @href exists twice: @first @second', $args));
-          }
-
-          // Store the entity type with the file.
-          $file->entity_type_id = $entity_type_id;
-          // Store the file in the file map.
-          $file_map[$self] = $file;
-          // Create a vertex for the graph.
-          $vertex = $this->getVertex($self);
-          $this->tree()->addVertex($vertex);
-          if (empty($decoded['_embedded'])) {
-            // No dependencies to resolve.
-            continue;
-          }
-          // Here we need to resolve our dependencies;
-          foreach ($decoded['_embedded'] as $embedded) {
-            foreach ($embedded as $item) {
-              $this->tree()->addDirectedEdge($vertex, $this->getVertex($item['_links']['self']['href']));
-            }
-          }
-        }
-      }
-
-      // @todo what if no dependencies?
-      $sorted = $this->sortTree();
-      foreach ($sorted as $vertex) {
-        if (!empty($file_map[$vertex->link])) {
-          $file = $file_map[$vertex->link];
-          $entity_type_id = $file->entity_type_id;
-          $resource = $this->resourcePluginManager->getInstance(array('id' => 'entity:' . $entity_type_id));
-          $definition = $resource->getPluginDefinition();
-          $contents = $this->parseFile($file);
-          $class = $definition['serialization_class'];
-          $entity = $this->serializer->deserialize($contents, $class, 'hal_json', array('request_method' => 'POST'));
-          $entity->enforceIsNew(TRUE);
-          $entity->save();
-          $created[] = $entity;
-        }
-      }
+      $file_map = $this->resolveTree($folder);
+      $created = $this->persistTree($file_map);
     }
     // Reset the tree.
     $this->resetTree();
     // Reset link domain.
     $this->linkManager->setLinkDomain(FALSE);
     return $created;
+  }
+
+  /**
+   * Saves the default content entities to database.
+   *
+   * @param array $file_map - the file list.
+   */
+  protected function persistTree($file_map) {
+    $created = array();
+    // @todo what if no dependencies?
+    $sorted = $this->sortTree();
+    foreach ($sorted as $vertex) {
+      if (!empty($file_map[$vertex->link])) {
+        $file = $file_map[$vertex->link];
+        $entity_type_id = $file->entity_type_id;
+        $resource = $this->resourcePluginManager->getInstance(array('id' => 'entity:' . $entity_type_id));
+        $definition = $resource->getPluginDefinition();
+        $contents = $this->parseFile($file);
+        $class = $definition['serialization_class'];
+        $entity = $this->serializer->deserialize($contents, $class, 'hal_json', array('request_method' => 'POST'));
+        $entity->enforceIsNew(TRUE);
+        $entity->save();
+        $created[] = $entity;
+      }
+    }
+    return $created;
+  }
+
+  /**
+   * Builds the file map and returns it.
+   * The file map contains informations related to all json content file
+   * located in the specified folder.
+   *
+   * @param $folder
+   * @throws \Exception
+   */
+  protected function resolveTree($folder) {
+    $file_map = array();
+    foreach ($this->entityManager->getDefinitions() as $entity_type_id => $entity_type) {
+      $reflection = new \ReflectionClass($entity_type->getClass());
+      // We are only interested in importing content entities.
+      if ($reflection->implementsInterface('\Drupal\Core\Config\Entity\ConfigEntityInterface')) {
+        continue;
+      }
+      if (!file_exists($folder . '/' . $entity_type_id)) {
+        continue;
+      }
+      $files = $this->scanner()->scan($folder . '/' . $entity_type_id);
+      // Default content uses drupal.org as domain.
+      // @todo Make this use a uri like default-content:.
+      $this->linkManager->setLinkDomain(static::LINK_DOMAIN);
+      // Parse all of the files and sort them in order of dependency.
+      foreach ($files as $file) {
+        $contents = $this->parseFile($file);
+        // Decode the file contents.
+        $decoded = $this->serializer->decode($contents, 'hal_json');
+        // Get the link to this entity.
+        $self = $decoded['_links']['self']['href'];
+
+        // Throw an exception when this URL already exists.
+        if (isset($file_map[$self])) {
+          $args = array(
+            '@href' => $self,
+            '@first' => $file_map[$self]->uri,
+            '@second' => $file->uri,
+          );
+          // Reset link domain.
+          $this->linkManager->setLinkDomain(FALSE);
+          throw new \Exception(SafeMarkup::format('Default content with href @href exists twice: @first @second', $args));
+        }
+
+        // Store the entity type with the file.
+        $file->entity_type_id = $entity_type_id;
+        // Store the file in the file map.
+        $file_map[$self] = $file;
+        // Create a vertex for the graph.
+        $vertex = $this->getVertex($self);
+        $this->tree()->addVertex($vertex);
+        if (empty($decoded['_embedded'])) {
+          // No dependencies to resolve.
+          continue;
+        }
+        // Here we need to resolve our dependencies;
+        foreach ($decoded['_embedded'] as $embedded) {
+          foreach ($embedded as $item) {
+            $this->tree()->addDirectedEdge($vertex, $this->getVertex($item['_links']['self']['href']));
+          }
+        }
+      }
+    }
+    return $file_map;
+  }
+
+  /**
+   * Returns a drupal entity built from the specified json file.
+   *
+   * @param $file stdClass object containing the defaut content json file definition.
+   * @return object
+   */
+  protected function getDeserializedEntityFromFile($file) {
+    $entity_type_id = $file->entity_type_id;
+    $resource = $this->resourcePluginManager->getInstance(array('id' => 'entity:' . $entity_type_id));
+    $definition = $resource->getPluginDefinition();
+    $contents = $this->parseFile($file);
+    $class = $definition['serialization_class'];
+    return $this->serializer->deserialize($contents, $class, 'hal_json', array('request_method' => 'POST'));
   }
 
   /**
