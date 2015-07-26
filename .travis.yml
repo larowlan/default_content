@@ -28,6 +28,7 @@ before_install:
 
 install:
   # Grab Drush
+  - composer self-update
   - composer global require drush/drush:dev-master --prefer-source
   - cd /home/travis/.composer/vendor/drush/drush && cd -
   # Make sure we don't fail when checking out projects
@@ -49,7 +50,11 @@ install:
   # Get latest drupal 8 core
   - cd $TRAVIS_BUILD_DIR/..
   - git clone --depth 1 --branch 8.0.x http://git.drupal.org/project/drupal.git
-  # Restart apache and test it
+  # Add composer_manager
+  - cd drupal
+  - git clone --depth 1 --branch 8.x-1.x http://git.drupal.org/project/composer_manager.git modules/composer_manager
+  - php ./modules/composer_manager/scripts/init.sh
+    # Restart apache and test it
   - sudo service apache2 restart
   - curl -v "http://localhost"
   # Re-enable when trying to get CodeSniffer doesn't return a 403 anymore.
@@ -71,6 +76,10 @@ script:
   - cp -R $TRAVIS_BUILD_DIR/* $TRAVIS_BUILD_DIR/../drupal/modules/default_content/
   # go to our Drupal main directory
   - cd $TRAVIS_BUILD_DIR/../drupal
+  # Update dependencies
+  - cd core
+  - composer drupal-update --no-interaction
+  - cd ..
   - ls -la $TRAVIS_BUILD_DIR/../drupal/sites/default
   # Run the tests
   - php core/scripts/run-tests.sh --verbose --color --concurrency 4 --php `which php` --url http://localhost "default_content" > /tmp/test.txt && TEST_EXIT=$?
