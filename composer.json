@@ -4,5 +4,7 @@
   "type": "drupal-module",
   "license": "GPL-2.0+",
   "minimum-stability": "dev",
-  "require": { }
+  "require": {
+    "sdboyer/gliph": "0.1.*"
+  }
 }
