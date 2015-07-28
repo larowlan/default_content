@@ -7,6 +7,7 @@
 
 namespace Drupal\default_content;
 
+use Drupal\Component\Graph\Graph;
 use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
@@ -14,8 +15,6 @@ use Drupal\Core\Entity\EntityManager;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\rest\LinkManager\LinkManagerInterface;
 use Drupal\rest\Plugin\Type\ResourcePluginManager;
-use Gliph\Graph\DirectedAdjacencyList;
-use Gliph\Traversal\DepthFirst;
 use Symfony\Component\Serializer\Serializer;
 
 /**
@@ -62,18 +61,18 @@ class DefaultContentManager implements DefaultContentManagerInterface {
   protected $scanner;
 
   /**
-   * The tree resolver.
-   *
-   * @var \Gliph\Graph\DirectedAdjacencyList
-   */
-  protected $tree = FALSE;
-
-  /**
    * A list of vertex objects keyed by their link.
    *
    * @var array
    */
   protected $vertexes = array();
+
+  /**
+   * The graph entries.
+   *
+   * @var array
+   */
+  protected $graph = [];
 
   /**
    * The link manager service.
@@ -151,7 +150,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
           $file_map[$self] = $file;
           // Create a vertex for the graph.
           $vertex = $this->getVertex($self);
-          $this->tree()->addVertex($vertex);
+          $this->graph[$vertex->link]['edges'] = [];
           if (empty($decoded['_embedded'])) {
             // No dependencies to resolve.
             continue;
@@ -159,17 +158,18 @@ class DefaultContentManager implements DefaultContentManagerInterface {
           // Here we need to resolve our dependencies;
           foreach ($decoded['_embedded'] as $embedded) {
             foreach ($embedded as $item) {
-              $this->tree()->addDirectedEdge($vertex, $this->getVertex($item['_links']['self']['href']));
+              $edge = $this->getVertex($item['_links']['self']['href']);
+              $this->graph[$vertex->link]['edges'][$edge->link] = TRUE;
             }
           }
         }
       }
 
       // @todo what if no dependencies?
-      $sorted = $this->sortTree();
-      foreach ($sorted as $vertex) {
-        if (!empty($file_map[$vertex->link])) {
-          $file = $file_map[$vertex->link];
+      $sorted = $this->sortTree($this->graph);
+      foreach ($sorted as $link => $details) {
+        if (!empty($file_map[$link])) {
+          $file = $file_map[$link];
           $entity_type_id = $file->entity_type_id;
           $resource = $this->resourcePluginManager->getInstance(array('id' => 'entity:' . $entity_type_id));
           $definition = $resource->getPluginDefinition();
@@ -292,20 +292,16 @@ class DefaultContentManager implements DefaultContentManagerInterface {
     return file_get_contents($file->uri);
   }
 
-  protected function tree() {
-    if (empty($this->tree)) {
-      $this->tree = new DirectedAdjacencyList();
-    }
-    return $this->tree;
-  }
-
   protected function resetTree() {
-    $this->tree = FALSE;
+    $this->graph = [];
     $this->vertexes = array();
   }
 
-  protected function sortTree() {
-    return DepthFirst::toposort($this->tree());
+  protected function sortTree(array $graph) {
+    $graph_object = new Graph($graph);
+    $sorted = $graph_object->searchAndSort();
+    uasort($sorted, 'Drupal\Component\Utility\SortArray::sortByWeightElement');
+    return array_reverse($sorted);
   }
 
   /**
