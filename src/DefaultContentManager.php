@@ -13,8 +13,12 @@ use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityManager;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\default_content\Event\ExportEvent;
+use Drupal\default_content\Event\ImportEvent;
 use Drupal\rest\LinkManager\LinkManagerInterface;
 use Drupal\rest\Plugin\Type\ResourcePluginManager;
+use Symfony\Component\EventDispatcher\Event;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Serializer\Serializer;
 
 /**
@@ -82,6 +86,13 @@ class DefaultContentManager implements DefaultContentManagerInterface {
   protected $linkManager;
 
   /**
+   * The event dispatcher.
+   *
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
+   */
+  protected $eventDispatcher;
+
+  /**
    * Constructs the default content manager.
    *
    * @param \Symfony\Component\Serializer\Serializer $serializer
@@ -95,11 +106,12 @@ class DefaultContentManager implements DefaultContentManagerInterface {
    * @param \Drupal\rest\LinkManager\LinkManagerInterface $link_manager
    *   The link manager service.
    */
-  public function __construct(Serializer $serializer, ResourcePluginManager $resource_plugin_manager, AccountInterface $current_user, EntityManager $entity_manager, LinkManagerInterface $link_manager) {
+  public function __construct(Serializer $serializer, ResourcePluginManager $resource_plugin_manager, AccountInterface $current_user, EntityManager $entity_manager, LinkManagerInterface $link_manager, EventDispatcherInterface $event_dispatcher) {
     $this->serializer = $serializer;
     $this->resourcePluginManager = $resource_plugin_manager;
     $this->entityManager = $entity_manager;
     $this->linkManager = $link_manager;
+    $this->eventDispatcher = $event_dispatcher;
   }
 
   /**
@@ -178,9 +190,10 @@ class DefaultContentManager implements DefaultContentManagerInterface {
           $entity = $this->serializer->deserialize($contents, $class, 'hal_json', array('request_method' => 'POST'));
           $entity->enforceIsNew(TRUE);
           $entity->save();
-          $created[] = $entity;
+          $created[$entity->uuid()] = $entity;
         }
       }
+      $this->eventDispatcher->dispatch('default_content.import', new ImportEvent($created, $module));
     }
     // Reset the tree.
     $this->resetTree();
@@ -200,6 +213,8 @@ class DefaultContentManager implements DefaultContentManagerInterface {
     $return = $this->serializer->serialize($entity, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
     // Reset link domain.
     $this->linkManager->setLinkDomain(FALSE);
+    $this->eventDispatcher->dispatch('default_content.import', new ExportEvent($entity));
+
     return $return;
   }
 
