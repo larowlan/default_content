@@ -42,7 +42,6 @@ class DefaultContentTest extends WebTestBase {
     $this->rebuildContainer();
     $node = $this->drupalGetNodeByTitle('Imported node');
     $this->assertEqual($node->body->value, 'Crikey it works!');
-    $this->assertEqual($node->uid->target_id, 2);
     $this->assertEqual($node->getType(), 'page');
     $terms = \Drupal::entityManager()->getStorage('taxonomy_term')->loadMultiple();
     $term = reset($terms);
