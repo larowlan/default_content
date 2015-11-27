@@ -109,4 +109,27 @@ class DefaultContentManagerIntegrationTest extends KernelTestBase {
     $this->assertEqual(reset($exported_by_entity_type['user']), $expected_user);
   }
 
+  /**
+   * Tests exportModuleContent().
+   */
+  public function testModuleExport() {
+    \Drupal::service('module_installer')->install(['node', 'default_content', 'default_content_export_test']);
+    \Drupal::service('router.builder')->rebuild();
+    $this->defaultContentManager = \Drupal::service('default_content.manager');
+
+    $test_uuid = '0e45d92f-1919-47cd-8b60-964a8a761292';
+    $node_type = NodeType::create(['type' => 'test']);
+    $node_type->save();
+    $node = Node::create(['type' => $node_type->id(), 'title' => 'test node']);
+    $node->uuid = $test_uuid;
+    $node->save();
+    $node = Node::load($node->id());
+    $serializer = \Drupal::service('serializer');
+    \Drupal::service('rest.link_manager')->setLinkDomain(DefaultContentManager::LINK_DOMAIN);
+    $expected_node = $serializer->serialize($node, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
+
+    $content = $this->defaultContentManager->exportModuleContent('default_content_export_test');
+    $this->assertEqual($content['node'][$test_uuid], $expected_node);
+  }
+
 }

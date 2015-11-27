@@ -33,6 +33,14 @@ function default_content_drush_command() {
     'aliases' => ['dcer'],
     'required-arguments' => 2,
   ];
+  $items['default-content-export-module'] = [
+    'description' => dt('Exports all the content defined in a module info file.'),
+    'arguments' => [
+      'module' => dt('The name of the module.'),
+    ],
+    'aliases' => ['dcem'],
+    'required-arguments' => 1,
+  ];
 
   return $items;
 }
@@ -73,12 +81,19 @@ function drush_default_content_export_references($entity_type_id, $entity_id) {
   $folder = drush_get_option('folder', '.');
 
   $serialized_by_type = $manager->exportContentWithReferences($entity_type_id, $entity_id);
-  foreach ($serialized_by_type as $entity_type => $serialized_entities) {
-    // Ensure that the folder per entity type exists.
-    $entity_type_folder = "$folder/$entity_type";
-    file_prepare_directory($entity_type_folder, FILE_CREATE_DIRECTORY);
-    foreach ($serialized_entities as $entity_id => $serialized_entity) {
-      file_put_contents($entity_type_folder . '/' . $entity_id . '.json', $serialized_entity);
-    }
-  }
+  $manager->writeDefaultContent($serialized_by_type, $folder);
+}
+
+/**
+ * Exports all of the content for a given module.
+ *
+ * @param string $module_name
+ *   The module name to export.
+ */
+function drush_default_content_export_module($module_name) {
+  /** @var \Drupal\default_content\DefaultContentManagerInterface $manager */
+  $manager = \Drupal::service('default_content.manager');
+  $serialized_by_type = $manager->exportModuleContent($module_name);
+  $module_folder = \Drupal::moduleHandler()->getModule($module_name)->getPath() . '/content';
+  $manager->writeDefaultContent($serialized_by_type, $module_folder);
 }
