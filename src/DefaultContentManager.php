@@ -324,7 +324,8 @@ class DefaultContentManager implements DefaultContentManagerInterface {
       if ($dependent_entity instanceof ConfigEntityInterface) {
         unset($entity_dependencies[$id]);
       }
-      else {
+      elseif (!isset($entity_dependencies[$id])) {
+        // Prevent loops.
         $entity_dependencies = array_merge($entity_dependencies, $this->getEntityReferencesRecursive($dependent_entity, $depth + 1));
       }
     }
