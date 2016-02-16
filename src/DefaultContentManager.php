@@ -61,6 +61,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
   protected $entityManager;
 
   /**
+<<<<<<< HEAD
    * The entity repository.
    *
    * @var \Drupal\Core\Entity\EntityRepositoryInterface
@@ -68,6 +69,8 @@ class DefaultContentManager implements DefaultContentManagerInterface {
   protected $entityRepository;
 
   /**
+=======
+>>>>>>> origin/8.x-1.x
    * The module handler.
    *
    * @var \Drupal\Core\Extension\ModuleHandlerInterface
@@ -300,7 +303,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
   }
 
   /**
-   * {@inheritdoc{
+   * {@inheritdoc}
    */
   public function writeDefaultContent($serialized_by_type, $folder) {
     foreach ($serialized_by_type as $entity_type => $serialized_entities) {
