@@ -11,7 +11,8 @@ use Drupal\Component\Graph\Graph;
 use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\Core\Entity\EntityManager;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Extension\InfoParserInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -53,11 +54,18 @@ class DefaultContentManager implements DefaultContentManagerInterface {
   protected $currentUser;
 
   /**
-   * The entity manager.
+   * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityManagerInterface
    */
   protected $entityManager;
+
+  /**
+   * The entity repository.
+   *
+   * @var \Drupal\Core\Entity\EntityRepositoryInterface
+   */
+  protected $entityRepository;
 
   /**
    * The module handler.
@@ -117,8 +125,10 @@ class DefaultContentManager implements DefaultContentManagerInterface {
    *   The rest resource plugin manager.
    * @param \Drupal\Core\Session|AccountInterface $current_user
    *   The current user.
-   * @param \Drupal\Core\Entity\EntityManager $entity_manager
-   *   The entity manager service.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_manager
+   *   The entity type manager service.
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   *   The entity repository service.
    * @param \Drupal\rest\LinkManager\LinkManagerInterface $link_manager
    *   The link manager service.
    * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
@@ -128,10 +138,11 @@ class DefaultContentManager implements DefaultContentManagerInterface {
    * @param \Drupal\Core\Extension\InfoParserInterface $info_parser
    *   The info file parser.
    */
-  public function __construct(Serializer $serializer, ResourcePluginManager $resource_plugin_manager, AccountInterface $current_user, EntityManager $entity_manager, LinkManagerInterface $link_manager, EventDispatcherInterface $event_dispatcher, ModuleHandlerInterface $module_handler, InfoParserInterface $info_parser) {
+  public function __construct(Serializer $serializer, ResourcePluginManager $resource_plugin_manager, AccountInterface $current_user, EntityTypeManagerInterface $entity_manager, EntityRepositoryInterface $entity_repository, LinkManagerInterface $link_manager, EventDispatcherInterface $event_dispatcher, ModuleHandlerInterface $module_handler, InfoParserInterface $info_parser) {
     $this->serializer = $serializer;
     $this->resourcePluginManager = $resource_plugin_manager;
     $this->entityManager = $entity_manager;
+    $this->entityRepository = $entity_repository;
     $this->linkManager = $link_manager;
     $this->eventDispatcher = $event_dispatcher;
     $this->moduleHandler = $module_handler;
@@ -281,7 +292,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
     }
     foreach ($info['default_content'] as $entity_type => $uuids) {
       foreach ($uuids as $uuid) {
-        $entity = $this->entityManager->loadEntityByUuid($entity_type, $uuid);
+        $entity = $this->entityRepository->loadEntityByUuid($entity_type, $uuid);
         $exported_content[$entity_type][$uuid] = $this->exportContent($entity_type, $entity->id());
       }
     }
