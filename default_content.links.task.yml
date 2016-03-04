@@ -1,0 +1,3 @@
+default_content.tabs:
+  class: \Drupal\Core\Menu\LocalTaskDefault
+  deriver: \Drupal\default_content\LocalTasks

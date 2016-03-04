@@ -44,7 +44,7 @@ class RelationLinkManager extends RestRelationLinkManager {
   /**
    * {@inheritdoc}
    */
-  protected function writeCache() {
+  protected function writeCache($context = []) {
     $data = array();
 
     foreach ($this->entityManager->getDefinitions() as $entity_type_id => $entity_type) {

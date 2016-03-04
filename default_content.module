@@ -1,18 +1,19 @@
 <?php
 
-/**
- * @file
- * Installs default content on the behalf of modules at time of install.
- */
 
 /**
- * Implements hook_modules_installed().
+ * Implements hook_entity_type_alter().
+ * creates another node form for exporting
  */
-function default_content_modules_installed($modules) {
-  // @todo Move this to an event once we have HookEvent.
-  foreach ($modules as $module) {
-    if (!\Drupal::isConfigSyncing()) {
-      \Drupal::service('default_content.manager')->importContent($module);
+function __default_content_entity_type_alter(array &$entity_types) {
+  foreach ($entity_types as $entity_type_id => $entity_type) {
+
+    if ($entity_type instanceOf Drupal\Core\Entity\ContentEntityType) {
+      $entity_types[$entity_type_id]
+        ->setFormClass('default_content_export', 'Drupal\default_content\ExportEntityForm');
+      $entity_types[$entity_type_id]
+        ->setLinkTemplate('export-form', "/$entity_type_id/{{$entity_type_id}}/export");
     }
   }
+
 }
