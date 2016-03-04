@@ -5,6 +5,17 @@
  * Installs default content on the behalf of modules at time of install.
  */
 
+
+/**
+ * Implements hook_install().
+ * check all existing modules for imported content()
+ */
+function default_content_install() {
+  foreach (\Drupal::moduleHandler()->getModuleList() as $module => $null) {
+    \Drupal::service('default_content.manager')->importContent($module);
+  }
+}
+
 /**
  * Implements hook_modules_installed().
  */
@@ -16,3 +27,5 @@ function default_content_modules_installed($modules) {
     }
   }
 }
+
+
