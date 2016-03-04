@@ -17,7 +17,7 @@ class TypeLinkManager extends RestTypeLinkManager {
   /**
    * {@inheritdoc}
    */
-  public function getTypeUri($entity_type, $bundle) {
+  public function getTypeUri ($entity_type, $bundle, $context = array()) {
     // Make the base path refer to drupal.org.
     return "http://drupal.org/rest/type/$entity_type/$bundle";
   }

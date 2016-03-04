@@ -36,7 +36,7 @@ class RelationLinkManager extends RestRelationLinkManager {
   /**
    * {@inheritdoc}
    */
-  public function getRelationUri($entity_type, $bundle, $field_name) {
+  public function getRelationUri($entity_type, $bundle, $field_name, $context = array()) {
     // Make the base path refer to drupal.org.x`
     return "http://drupal.org/rest/relation/$entity_type/$bundle/$field_name";
   }
