@@ -58,7 +58,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityManager;
+  protected $entityTypeManager;
 
   /**
 <<<<<<< HEAD
@@ -128,7 +128,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
    *   The rest resource plugin manager.
    * @param \Drupal\Core\Session|AccountInterface $current_user
    *   The current user.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
    * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
    *   The entity repository service.
@@ -141,10 +141,10 @@ class DefaultContentManager implements DefaultContentManagerInterface {
    * @param \Drupal\Core\Extension\InfoParserInterface $info_parser
    *   The info file parser.
    */
-  public function __construct(Serializer $serializer, ResourcePluginManager $resource_plugin_manager, AccountInterface $current_user, EntityTypeManagerInterface $entity_manager, EntityRepositoryInterface $entity_repository, LinkManagerInterface $link_manager, EventDispatcherInterface $event_dispatcher, ModuleHandlerInterface $module_handler, InfoParserInterface $info_parser) {
+  public function __construct(Serializer $serializer, ResourcePluginManager $resource_plugin_manager, AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager, EntityRepositoryInterface $entity_repository, LinkManagerInterface $link_manager, EventDispatcherInterface $event_dispatcher, ModuleHandlerInterface $module_handler, InfoParserInterface $info_parser) {
     $this->serializer = $serializer;
     $this->resourcePluginManager = $resource_plugin_manager;
-    $this->entityManager = $entity_manager;
+    $this->entityTypeManager = $entity_type_manager;
     $this->entityRepository = $entity_repository;
     $this->linkManager = $link_manager;
     $this->eventDispatcher = $event_dispatcher;
@@ -161,7 +161,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
 
     if (file_exists($folder)) {
       $file_map = array();
-      foreach ($this->entityManager->getDefinitions() as $entity_type_id => $entity_type) {
+      foreach ($this->entityTypeManager->getDefinitions() as $entity_type_id => $entity_type) {
         $reflection = new \ReflectionClass($entity_type->getClass());
         // We are only interested in importing content entities.
         if ($reflection->implementsInterface('\Drupal\Core\Config\Entity\ConfigEntityInterface')) {
@@ -244,7 +244,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
    * {@inheritdoc}
    */
   public function exportContent($entity_type_id, $entity_id) {
-    $storage = $this->entityManager->getStorage($entity_type_id);
+    $storage = $this->entityTypeManager->getStorage($entity_type_id);
     $entity = $storage->load($entity_id);
 
     $this->linkManager->setLinkDomain(static::LINK_DOMAIN);
@@ -260,7 +260,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
    * {@inheritdoc}
    */
   public function exportContentWithReferences($entity_type_id, $entity_id) {
-    $storage = $this->entityManager->getStorage($entity_type_id);
+    $storage = $this->entityTypeManager->getStorage($entity_type_id);
     $entity = $storage->load($entity_id);
 
     if (!$entity) {

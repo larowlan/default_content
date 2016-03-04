@@ -43,7 +43,7 @@ class DefaultContentTest extends WebTestBase {
     $node = $this->drupalGetNodeByTitle('Imported node');
     $this->assertEqual($node->body->value, 'Crikey it works!');
     $this->assertEqual($node->getType(), 'page');
-    $terms = \Drupal::entityManager()->getStorage('taxonomy_term')->loadMultiple();
+    $terms = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadMultiple();
     $term = reset($terms);
     $this->assertTrue(!empty($term));
     $this->assertEqual($term->name->value, 'A tag');
