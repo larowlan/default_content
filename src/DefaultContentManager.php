@@ -226,6 +226,10 @@ class DefaultContentManager implements DefaultContentManagerInterface {
           $contents = $this->parseFile($file);
           $class = $definition['serialization_class'];
           $entity = $this->serializer->deserialize($contents, $class, 'hal_json', array('request_method' => 'POST'));
+          if ($this->entityTypeManager->getStorage($entity_type_id)->loadByProperties(['uuid' => $entity->uuid()])) {
+            drupal_set_message(t('node @uuid already exists', ['@uuid' => $entity->uuid()]));
+            continue;
+          }
           $entity->enforceIsNew(TRUE);
           $entity->save();
           $created[$entity->uuid()] = $entity;
