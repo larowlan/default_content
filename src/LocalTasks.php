@@ -52,7 +52,6 @@ class LocalTasks extends DeriverBase implements ContainerDeriverInterface {
         ];
       }
     }
-    debug($this->derivatives);
     return $this->derivatives;
   }
 
