@@ -61,7 +61,6 @@ class DefaultContentManager implements DefaultContentManagerInterface {
   protected $entityTypeManager;
 
   /**
-<<<<<<< HEAD
    * The entity repository.
    *
    * @var \Drupal\Core\Entity\EntityRepositoryInterface
@@ -69,8 +68,6 @@ class DefaultContentManager implements DefaultContentManagerInterface {
   protected $entityRepository;
 
   /**
-=======
->>>>>>> origin/8.x-1.x
    * The module handler.
    *
    * @var \Drupal\Core\Extension\ModuleHandlerInterface
