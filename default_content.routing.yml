@@ -1,8 +1,0 @@
-#entity.node.export:
-# defaults:
-#    _form: \Drupal\default_content\ExportForm
-#    _title: '\Drupal\defaultcontent\Export::title'
-#  requirements:
-#    _permission: 'access site reports'
-#  options:
-#    _admin_route: true

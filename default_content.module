@@ -1,23 +1,5 @@
 <?php
 
-
-/**
- * Implements hook_entity_type_alter().
- * creates another node form for exporting
- */
-function __default_content_entity_type_alter(array &$entity_types) {
-  foreach ($entity_types as $entity_type_id => $entity_type) {
-
-    if ($entity_type instanceOf Drupal\Core\Entity\ContentEntityType) {
-      $entity_types[$entity_type_id]
-        ->setFormClass('default_content_export', 'Drupal\default_content\ExportEntityForm');
-      $entity_types[$entity_type_id]
-        ->setLinkTemplate('export-form', "/$entity_type_id/{{$entity_type_id}}/export");
-    }
-  }
-
-}
-
 /**
  * Implements hook_modules_installed().
  */
