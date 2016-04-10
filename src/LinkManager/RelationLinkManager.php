@@ -36,7 +36,7 @@ class RelationLinkManager extends RestRelationLinkManager {
   /**
    * {@inheritdoc}
    */
-  public function getRelationUri($entity_type, $bundle, $field_name, $context = array()) {
+  public function getRelationUri($entity_type, $bundle, $field_name) {
     // Make the base path refer to drupal.org.x`
     return "http://drupal.org/rest/relation/$entity_type/$bundle/$field_name";
   }
@@ -44,7 +44,7 @@ class RelationLinkManager extends RestRelationLinkManager {
   /**
    * {@inheritdoc}
    */
-  protected function writeCache($context = []) {
+  protected function writeCache() {
     $data = array();
 
     foreach ($this->entityManager->getDefinitions() as $entity_type_id => $entity_type) {

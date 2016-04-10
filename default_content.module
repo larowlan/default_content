@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Installs default content on the behalf of modules at time of install.
+ */
+
+/**
  * Implements hook_modules_installed().
  */
 function default_content_modules_installed($modules) {
