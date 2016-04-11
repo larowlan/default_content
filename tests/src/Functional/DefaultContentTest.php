@@ -1,15 +1,20 @@
 <?php
 
-namespace Drupal\default_content\Tests;
+namespace Drupal\Tests\default_content\Functional;
 
-use Drupal\simpletest\WebTestBase;
+use Drupal\simpletest\BrowserTestBase;
+use Drupal\simpletest\ContentTypeCreationTrait;
+use Drupal\simpletest\NodeCreationTrait;
 
 /**
  * Test import of default content.
  *
  * @group default_content
  */
-class DefaultContentTest extends WebTestBase {
+class DefaultContentTest extends BrowserTestBase {
+
+  use ContentTypeCreationTrait;
+  use NodeCreationTrait;
 
   /**
    * Modules to enable.
@@ -23,7 +28,7 @@ class DefaultContentTest extends WebTestBase {
    */
   protected function setUp() {
     parent::setUp();
-    $this->drupalCreateContentType(array('type' => 'page'));
+    $this->createContentType(array('type' => 'page'));
   }
 
   /**
@@ -35,13 +40,13 @@ class DefaultContentTest extends WebTestBase {
     // Enable the module and import the content.
     \Drupal::service('module_installer')->install(array('default_content_test'), TRUE);
     $this->rebuildContainer();
-    $node = $this->drupalGetNodeByTitle('Imported node');
-    $this->assertEqual($node->body->value, 'Crikey it works!');
-    $this->assertEqual($node->getType(), 'page');
-    $terms = \Drupal::entityManager()->getStorage('taxonomy_term')->loadMultiple();
+    $node = $this->getNodeByTitle('Imported node');
+    $this->assertEquals($node->body->value, 'Crikey it works!');
+    $this->assertEquals($node->getType(), 'page');
+    $terms = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadMultiple();
     $term = reset($terms);
     $this->assertTrue(!empty($term));
-    $this->assertEqual($term->name->value, 'A tag');
+    $this->assertEquals($term->name->value, 'A tag');
     $term_id = $node->field_tags->target_id;
     $this->assertTrue(!empty($term_id), 'Term reference populated');
   }
