@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * \Drupal\default_content\Event\ImportEvent
- */
-
 namespace Drupal\default_content\Event;
 
 use Symfony\Component\EventDispatcher\Event;

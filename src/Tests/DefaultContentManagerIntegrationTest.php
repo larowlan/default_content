@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\default_content\Tests\DefaultContentManagerIntegrationTest.
- */
-
 namespace Drupal\default_content\Tests;
 
 use Drupal\default_content\DefaultContentManager;

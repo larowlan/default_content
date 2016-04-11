@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * \Drupal\default_content\Event\ExportEvent
- */
-
 namespace Drupal\default_content\Event;
 
 use Drupal\Core\Entity\ContentEntityInterface;

@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\default_content\DefaultContentManager.
- */
-
 namespace Drupal\default_content;
 
 

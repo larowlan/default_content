@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * \Drupal\default_content\Event\DefaultContentEvents
- */
-
 namespace Drupal\default_content\Event;
 
 /**
