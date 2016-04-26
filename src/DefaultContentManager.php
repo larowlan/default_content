@@ -174,7 +174,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
           // Get the link to this entity.
           $item_uuid = $decoded['uuid'][0]['value'];
 
-          // Throw an exception when this URL already exists.
+          // Throw an exception when this UUID already exists.
           if (isset($file_map[$item_uuid])) {
             $args = array(
               '@uuid' => $item_uuid,
