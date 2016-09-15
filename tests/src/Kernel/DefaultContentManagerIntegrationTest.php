@@ -62,6 +62,21 @@ class DefaultContentManagerIntegrationTest extends KernelTestBase {
     // Ensure the proper UUID is part of it.
     $this->assertEqual($exported_decoded->uuid[0]->value, $term->uuid());
     $this->assertEqual($exported, $expected);
+
+    // Tests export of taxonomy parent field.
+    // @todo Get rid of after https://www.drupal.org/node/2543726
+    $child_term = $term = Term::create([
+      'vid' => $vocabulary->id(),
+      'name' => 'child_name',
+      'parent' => $term->id(),
+    ]);
+    $child_term->save();
+    // Make sure parent relation is exported.
+    $exported = $this->defaultContentManager->exportContent('taxonomy_term', $child_term->id());
+    $relation_uri = 'http://drupal.org/rest/relation/taxonomy_term/test/parent';
+    $exported_decoded = json_decode($exported);
+    $this->assertFalse(empty($exported_decoded->_links->{$relation_uri}));
+    $this->assertFalse(empty($exported_decoded->_embedded->{$relation_uri}));
   }
 
   /**
