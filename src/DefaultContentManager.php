@@ -3,8 +3,7 @@
 namespace Drupal\default_content;
 
 use Drupal\Component\Graph\Graph;
-use Drupal\Component\Utility\SafeMarkup;
-use Drupal\Core\Config\Entity\ConfigEntityInterface;
+use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
@@ -183,7 +182,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
             );
             // Reset link domain.
             $this->linkManager->setLinkDomain(FALSE);
-            throw new \Exception(SafeMarkup::format('Default content with uuid @uuid exists twice: @first @second', $args));
+            throw new \Exception(new FormattableMarkup('Default content with uuid @uuid exists twice: @first @second', $args));
           }
 
           // Store the entity type with the file.
@@ -257,13 +256,14 @@ class DefaultContentManager implements DefaultContentManagerInterface {
     $entity = $storage->load($entity_id);
 
     if (!$entity) {
-      throw new \InvalidArgumentException(SafeMarkup::format('Entity @type with ID @id does not exist', ['@type' => $entity_type_id, '@id' => $entity_id]));
+      throw new \InvalidArgumentException(new FormattableMarkup('Entity @type with ID @id does not exist', ['@type' => $entity_type_id, '@id' => $entity_id]));
+    }
+    if (!($entity instanceof ContentEntityInterface)) {
+      throw new \InvalidArgumentException(new FormattableMarkup('Entity @type with ID @id should be a content entity', ['@type' => $entity_type_id, '@id' => $entity_id]));
     }
 
-    /** @var \Drupal\Core\Entity\ContentEntityInterface[] $entities */
-    $entities = [$entity];
-
-    $entities = array_merge($entities, $this->getEntityReferencesRecursive($entity));
+    $entities = [$entity->uuid() => $entity];
+    $entities = $this->getEntityReferencesRecursive($entity, 0, $entities);
 
     $serialized_entities_per_type = [];
     $this->linkManager->setLinkDomain(static::LINK_DOMAIN);
@@ -312,37 +312,43 @@ class DefaultContentManager implements DefaultContentManagerInterface {
   /**
    * Returns all referenced entities of an entity.
    *
-   * This method is also recursive to support usecases like a node -> media
+   * This method is also recursive to support use-cases like a node -> media
    * -> file.
    *
    * @param \Drupal\Core\Entity\ContentEntityInterface $entity
    *   The entity.
    * @param int $depth
    *   Guard against infinite recursion.
+   * @param \Drupal\Core\Entity\ContentEntityInterface[] $indexed_dependencies
+   *   Previously discovered dependencies.
    *
-   * @return \Drupal\Core\Entity\EntityInterface[]
+   * @return \Drupal\Core\Entity\ContentEntityInterface[]
+   *   Keyed array of entities indexed by entity type and ID.
    */
-  protected function getEntityReferencesRecursive(ContentEntityInterface $entity, $depth = 0) {
+  protected function getEntityReferencesRecursive(ContentEntityInterface $entity, $depth = 0, array &$indexed_dependencies = []) {
     $entity_dependencies = $entity->referencedEntities();
 
-    foreach ($entity_dependencies as $id => $dependent_entity) {
+    foreach ($entity_dependencies as $dependent_entity) {
       // Config entities should not be exported but rather provided by default
       // config.
-      if ($dependent_entity instanceof ConfigEntityInterface) {
-        unset($entity_dependencies[$id]);
+      if (!($dependent_entity instanceof ContentEntityInterface)) {
+        continue;
       }
-      elseif (!isset($entity_dependencies[$id])) {
-        // Prevent loops.
-        $entity_dependencies = array_merge($entity_dependencies, $this->getEntityReferencesRecursive($dependent_entity, $depth + 1));
+      // Using UUID to keep dependencies unique to prevent recursion.
+      $key = $dependent_entity->uuid();
+      if (isset($indexed_dependencies[$key])) {
+        // Do not add already indexed dependencies.
+        continue;
+      }
+      $indexed_dependencies[$key] = $dependent_entity;
+      // Build in some support against infinite recursion.
+      if ($depth < 6) {
+        // @todo Make $depth configurable.
+        $indexed_dependencies += $this->getEntityReferencesRecursive($dependent_entity, $depth + 1, $indexed_dependencies);
       }
     }
 
-    // Build in some support against infinite recursion.
-    if ($depth > 5) {
-      return $entity_dependencies;
-    }
-
-    return array_unique($entity_dependencies, SORT_REGULAR);
+    return $indexed_dependencies;
   }
 
   /**

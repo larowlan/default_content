@@ -3,6 +3,7 @@
 namespace Drupal\Tests\default_content\Kernel;
 
 use Drupal\default_content\DefaultContentManager;
+use Drupal\field\Tests\EntityReference\EntityReferenceTestTrait;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
@@ -15,6 +16,7 @@ use Drupal\user\Entity\User;
  * @group default_content
  */
 class DefaultContentManagerIntegrationTest extends KernelTestBase {
+  use EntityReferenceTestTrait;
 
   /**
    * {@inheritdoc}
@@ -117,6 +119,23 @@ class DefaultContentManagerIntegrationTest extends KernelTestBase {
     // Compare the actual serialized data.
     $this->assertEqual(reset($exported_by_entity_type['node']), $expected_node);
     $this->assertEqual(reset($exported_by_entity_type['user']), $expected_user);
+
+    // Ensure no recursion on export.
+    $field_name = 'field_test_self_ref';
+    $this->createEntityReferenceField('node', $node_type->id(), $field_name, 'Self reference field', 'node');
+
+    $node1 = Node::create(['type' => $node_type->id(), 'title' => 'ref 1->3']);
+    $node1->save();
+    $node2 = Node::create(['type' => $node_type->id(), 'title' => 'ref 2->1', $field_name => $node1->id()]);
+    $node2->save();
+    $node3 = Node::create(['type' => $node_type->id(), 'title' => 'ref 3->2', $field_name => $node2->id()]);
+    $node3->save();
+    // Loop reference.
+    $node1->{$field_name}->target_id = $node3->id();
+    $node1->save();
+    $exported_by_entity_type = $this->defaultContentManager->exportContentWithReferences('node', $node3->id());
+    // Ensure all 3 nodes are exported.
+    $this->assertEquals(3, count($exported_by_entity_type['node']));
   }
 
   /**
