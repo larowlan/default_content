@@ -12,10 +12,13 @@ use Drupal\taxonomy\Entity\Vocabulary;
 use Drupal\user\Entity\User;
 
 /**
+ * Tests export functionality.
+ *
  * @coversDefaultClass \Drupal\default_content\DefaultContentManager
  * @group default_content
  */
 class DefaultContentManagerIntegrationTest extends KernelTestBase {
+
   use EntityReferenceTestTrait;
 
   /**
@@ -43,7 +46,10 @@ class DefaultContentManagerIntegrationTest extends KernelTestBase {
    * Tests exportContent().
    */
   public function testExportContent() {
-    \Drupal::service('module_installer')->install(['taxonomy', 'default_content']);
+    \Drupal::service('module_installer')->install([
+      'taxonomy',
+      'default_content',
+    ]);
     \Drupal::service('router.builder')->rebuild();
     $this->defaultContentManager = \Drupal::service('default_content.manager');
 
@@ -55,7 +61,8 @@ class DefaultContentManagerIntegrationTest extends KernelTestBase {
 
     /** @var \Symfony\Component\Serializer\Serializer $serializer */
     $serializer = \Drupal::service('serializer');
-    \Drupal::service('rest.link_manager')->setLinkDomain(DefaultContentManager::LINK_DOMAIN);
+    \Drupal::service('rest.link_manager')
+      ->setLinkDomain(DefaultContentManager::LINK_DOMAIN);
     $expected = $serializer->serialize($term, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
 
     $exported = $this->defaultContentManager->exportContent('taxonomy_term', $term->id());
@@ -96,14 +103,19 @@ class DefaultContentManagerIntegrationTest extends KernelTestBase {
 
     $node_type = NodeType::create(['type' => 'test']);
     $node_type->save();
-    $node = Node::create(['type' => $node_type->id(), 'title' => 'test node', 'uid' => $user->id()]);
+    $node = Node::create([
+      'type' => $node_type->id(),
+      'title' => 'test node',
+      'uid' => $user->id(),
+    ]);
     $node->save();
     // Reload the node to get the proper casted values from the DB.
     $node = Node::load($node->id());
 
     /** @var \Symfony\Component\Serializer\Serializer $serializer */
     $serializer = \Drupal::service('serializer');
-    \Drupal::service('rest.link_manager')->setLinkDomain(DefaultContentManager::LINK_DOMAIN);
+    \Drupal::service('rest.link_manager')
+      ->setLinkDomain(DefaultContentManager::LINK_DOMAIN);
     $expected_node = $serializer->serialize($node, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
     $expected_user = $serializer->serialize($user, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
 
@@ -126,9 +138,17 @@ class DefaultContentManagerIntegrationTest extends KernelTestBase {
 
     $node1 = Node::create(['type' => $node_type->id(), 'title' => 'ref 1->3']);
     $node1->save();
-    $node2 = Node::create(['type' => $node_type->id(), 'title' => 'ref 2->1', $field_name => $node1->id()]);
+    $node2 = Node::create([
+      'type' => $node_type->id(),
+      'title' => 'ref 2->1',
+      $field_name => $node1->id(),
+    ]);
     $node2->save();
-    $node3 = Node::create(['type' => $node_type->id(), 'title' => 'ref 3->2', $field_name => $node2->id()]);
+    $node3 = Node::create([
+      'type' => $node_type->id(),
+      'title' => 'ref 3->2',
+      $field_name => $node2->id(),
+    ]);
     $node3->save();
     // Loop reference.
     $node1->{$field_name}->target_id = $node3->id();
@@ -142,7 +162,11 @@ class DefaultContentManagerIntegrationTest extends KernelTestBase {
    * Tests exportModuleContent().
    */
   public function testModuleExport() {
-    \Drupal::service('module_installer')->install(['node', 'default_content', 'default_content_export_test']);
+    \Drupal::service('module_installer')->install([
+      'node',
+      'default_content',
+      'default_content_export_test',
+    ]);
     \Drupal::service('router.builder')->rebuild();
     $this->defaultContentManager = \Drupal::service('default_content.manager');
 
@@ -154,7 +178,8 @@ class DefaultContentManagerIntegrationTest extends KernelTestBase {
     $node->save();
     $node = Node::load($node->id());
     $serializer = \Drupal::service('serializer');
-    \Drupal::service('rest.link_manager')->setLinkDomain(DefaultContentManager::LINK_DOMAIN);
+    \Drupal::service('rest.link_manager')
+      ->setLinkDomain(DefaultContentManager::LINK_DOMAIN);
     $expected_node = $serializer->serialize($node, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
 
     $content = $this->defaultContentManager->exportModuleContent('default_content_export_test');

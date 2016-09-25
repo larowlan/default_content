@@ -26,7 +26,7 @@ class DefaultContentServiceProvider extends ServiceProviderBase {
         new Reference('module_handler'),
       ]);
       // The priority must be higher than that of
-      // serializer.normalizer.entity.hal in hal.services.yml
+      // serializer.normalizer.entity.hal in hal.services.yml.
       $service_definition->addTag('normalizer', ['priority' => 30]);
       $container->setDefinition('default_content.normalizer.taxonomy_term.halt', $service_definition);
     }

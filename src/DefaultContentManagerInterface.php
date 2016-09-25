@@ -2,11 +2,11 @@
 
 namespace Drupal\default_content;
 
-
 /**
  * An interface defining a default content importer.
  */
 interface DefaultContentManagerInterface {
+
   /**
    * Set the scanner.
    *
@@ -31,7 +31,7 @@ interface DefaultContentManagerInterface {
    *
    * @param string $entity_type_id
    *   The entity type ID.
-   * @param $entity_id
+   * @param mixed $entity_id
    *   The entity ID to export.
    *
    * @return string
@@ -67,8 +67,8 @@ interface DefaultContentManagerInterface {
    * Writes an array of serialized entities to a given folder.
    *
    * @param string[][] $serialized_by_type
-   *   An array of serialized entities keyed by entity type and UUID
-   * @param $folder
+   *   An array of serialized entities keyed by entity type and UUID.
+   * @param string $folder
    *   The folder to write files into.
    */
   public function writeDefaultContent($serialized_by_type, $folder);

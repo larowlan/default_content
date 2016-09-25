@@ -20,6 +20,7 @@ use Symfony\Component\Serializer\Serializer;
 
 /**
  * A service for handling import of default content.
+ *
  * @todo throw useful exceptions
  */
 class DefaultContentManager implements DefaultContentManagerInterface {
@@ -352,7 +353,7 @@ class DefaultContentManager implements DefaultContentManagerInterface {
   }
 
   /**
-   * Utility to get a default content scanner
+   * Utility to get a default content scanner.
    *
    * @return \Drupal\default_content\DefaultContentScanner
    *   A system listing implementation.
@@ -372,17 +373,35 @@ class DefaultContentManager implements DefaultContentManagerInterface {
   }
 
   /**
-   * Parses content files
+   * Parses content files.
+   *
+   * @param object $file
+   *   The scanned file.
+   *
+   * @return string
+   *   Contents of the file.
    */
   protected function parseFile($file) {
     return file_get_contents($file->uri);
   }
 
+  /**
+   * Resets tree properties.
+   */
   protected function resetTree() {
     $this->graph = [];
     $this->vertexes = array();
   }
 
+  /**
+   * Sorts dependencies tree.
+   *
+   * @param array $graph
+   *   Array of dependencies.
+   *
+   * @return array
+   *   Array of sorted dependencies.
+   */
   protected function sortTree(array $graph) {
     $graph_object = new Graph($graph);
     $sorted = $graph_object->searchAndSort();

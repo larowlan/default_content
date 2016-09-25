@@ -50,7 +50,7 @@ function default_content_drush_command() {
  *
  * @param string $entity_type_id
  *   The entity type ID.
- * @param $entity_id
+ * @param mixed $entity_id
  *   The entity ID to export.
  */
 function drush_default_content_export($entity_type_id, $entity_id) {

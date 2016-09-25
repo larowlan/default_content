@@ -13,7 +13,7 @@ class DefaultContentScanner {
    * @param string $directory
    *   Absolute path to the directory to search.
    *
-   * @return array
+   * @return object[]
    *   List of stdClass objects with name and uri properties.
    */
   public function scan($directory) {
