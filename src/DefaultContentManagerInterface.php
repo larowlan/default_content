@@ -26,12 +26,25 @@ interface DefaultContentManagerInterface {
    */
   public function importContent($module);
 
+
+  /**
+   * Deletes default content for a given module.
+   *
+   * @param string $module
+   *   The module to delete the default content for.
+   *
+   * @return array[\Drupal\Core\Entity\EntityInterface]
+   *   The deleted entities.
+   */
+  public function deleteContent($module);
+
+
   /**
    * Exports a single entity as importContent expects it.
    *
    * @param string $entity_type_id
    *   The entity type ID.
-   * @param mixed $entity_id
+   * @param $entity_id
    *   The entity ID to export.
    *
    * @return string
@@ -67,8 +80,8 @@ interface DefaultContentManagerInterface {
    * Writes an array of serialized entities to a given folder.
    *
    * @param string[][] $serialized_by_type
-   *   An array of serialized entities keyed by entity type and UUID.
-   * @param string $folder
+   *   An array of serialized entities keyed by entity type and UUID
+   * @param $folder
    *   The folder to write files into.
    */
   public function writeDefaultContent($serialized_by_type, $folder);
