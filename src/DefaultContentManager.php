@@ -236,6 +236,48 @@ class DefaultContentManager implements DefaultContentManagerInterface {
   /**
    * {@inheritdoc}
    */
+  public function deleteContent($module) {
+    $created = array();
+    $folder = drupal_get_path('module', $module) . "/content";
+
+    if (file_exists($folder)) {
+      $file_map = array();
+      foreach ($this->entityManager->getDefinitions() as $entity_type_id => $entity_type) {
+        $reflection = new \ReflectionClass($entity_type->getClass());
+        // We are only interested in importing content entities.
+        if ($reflection->implementsInterface('\Drupal\Core\Config\Entity\ConfigEntityInterface')) {
+          continue;
+        }
+        if (!file_exists($folder . '/' . $entity_type_id)) {
+          continue;
+        }
+        $files = $this->scanner()->scan($folder . '/' . $entity_type_id);
+        // Default content uses drupal.org as domain.
+        // @todo Make this use a uri like default-content:.
+        $this->linkManager->setLinkDomain(static::LINK_DOMAIN);
+        // Parse all of the files and sort them in order of dependency.
+        foreach ($files as $file) {
+          $contents = $this->parseFile($file);
+          // Decode the file contents.
+          $decoded = $this->serializer->decode($contents, 'hal_json');
+          // Get the link to this entity.
+          $uuid = $decoded['uuid'][0]['value'];
+
+          $entity = \Drupal::entityManager()->loadEntityByUuid($entity_type_id, $uuid);
+          $entity->delete();
+
+        }
+      }
+
+      //$this->eventDispatcher->dispatch(DefaultContentEvents::DELETE, new ImportEvent($created, $module));
+    }
+
+    return [];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function exportContent($entity_type_id, $entity_id) {
     $storage = $this->entityManager->getStorage($entity_type_id);
     $entity = $storage->load($entity_id);
