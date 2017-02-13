@@ -15,10 +15,10 @@ function default_content_drush_command() {
     'arguments' => [
       'entity_type' => dt('The entity type to export.'),
       'entity_id' => dt('The ID of the entity to export.'),
-      'run_as' => dt('(optional) Run as a particular user (uid)'),
     ],
     'options' => [
       'file' => dt('Write out the exported content to a file instead of stdout'),
+      'run-as' => dt('Run as a particular user (uid)'),
     ],
     'aliases' => ['dce'],
     'required-arguments' => 2,
@@ -28,10 +28,10 @@ function default_content_drush_command() {
     'arguments' => [
       'entity_type' => dt('The entity type to export.'),
       'entity_id' => dt('The ID of the entity to export.'),
-      'run_as' => dt('(optional) Run as a particular user (uid)'),
     ],
     'options' => [
       'folder' => dt('Folder to export to, entities are grouped by entity type into directories.'),
+      'run-as' => dt('Run as a particular user (uid)'),
     ],
     'aliases' => ['dcer'],
     'required-arguments' => 1,
@@ -40,7 +40,9 @@ function default_content_drush_command() {
     'description' => dt('Exports all the content defined in a module info file.'),
     'arguments' => [
       'module' => dt('The name of the module.'),
-      'run_as' => dt('(optional) Run as a particular user (uid)'),
+    ],
+    'options' => [
+      'run-as' => dt('Run as a particular user (uid)'),
     ],
     'aliases' => ['dcem'],
     'required-arguments' => 1,
@@ -117,12 +119,12 @@ function drush_default_content_export_module($module_name) {
 }
 
 /**
- * Check "run_as" argument and switch users if given.
+ * Check "run-as" option and switch user if given.
  *
  * @return void
  */
 function _drush_default_content_setup() {
-  if ($uid = drush_get_option('run_as')) {
+  if ($uid = drush_get_option('run-as')) {
     $accountSwitcher = \Drupal::service('account_switcher');
     $account = User::load($uid);
     $accountSwitcher->switchTo($account);
@@ -130,12 +132,12 @@ function _drush_default_content_setup() {
 }
 
 /**
- * Check "run_as" argument and switch users back if given.
+ * Check "run-as" option and switch user back if given.
  *
  * @return void
  */
 function _drush_default_content_teardown() {
-  if ($uid = drush_get_option('run_as')) {
+  if ($uid = drush_get_option('run-as')) {
     $accountSwitcher = \Drupal::service('account_switcher');
     $accountSwitcher->switchBack();
   }
