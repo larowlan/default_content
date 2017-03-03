@@ -88,14 +88,14 @@ function drush_default_content_export_references($entity_type_id, $entity_id = N
   $manager = \Drupal::service('default_content.manager');
 
   $folder = drush_get_option('folder', '.');
-  if (is_null($entity_id) && ($entities = \Drupal::entityQuery($entity_type_id)->execute())) {
-    // @todo Add paging.
-    foreach ($entities as $entity_id) {
-      $serialized_by_type = $manager->exportContentWithReferences($entity_type_id, $entity_id);
-      $manager->writeDefaultContent($serialized_by_type, $folder);
-    }
+  if (is_null($entity_id)) {
+    $entities = \Drupal::entityQuery($entity_type_id)->execute();
   }
   else {
+    $entities = array($entity_id);
+  }
+  // @todo Add paging.
+  foreach ($entities as $entity_id) {
     $serialized_by_type = $manager->exportContentWithReferences($entity_type_id, $entity_id);
     $manager->writeDefaultContent($serialized_by_type, $folder);
   }
