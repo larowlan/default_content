@@ -21,10 +21,18 @@ interface DefaultContentManagerInterface {
    * @param string $module
    *   The module to create the default content for.
    *
-   * @return array[\Drupal\Core\Entity\EntityInterface]
+   * @return array[\Drupal\Core\Entity\EntityInterface[]
    *   The created entities.
    */
   public function importContent($module);
+
+  /**
+   * Imports all default content across the site.
+   *
+   * @return array[\Drupal\Core\Entity\EntityInterface]
+   *   The created entities.
+   */
+  public function importAllContent();
 
   /**
    * Exports a single entity as importContent expects it.

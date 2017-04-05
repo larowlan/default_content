@@ -236,6 +236,16 @@ class DefaultContentManager implements DefaultContentManagerInterface {
   /**
    * {@inheritdoc}
    */
+  public function importAllContent() {
+    $module_names = array_keys($this->moduleHandler->getModuleList());
+    return array_reduce($module_names, function (array $entities, $module_name) {
+      return array_merge($entities, $this->importContent($module_name));
+    }, []);
+  }
+  
+  /**
+   * {@inheritdoc}
+   */
   public function exportContent($entity_type_id, $entity_id) {
     $storage = $this->entityManager->getStorage($entity_type_id);
     $entity = $storage->load($entity_id);

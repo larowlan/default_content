@@ -55,14 +55,11 @@ function default_content_drush_command() {
  * Imports all default content provided by all modules.
  */
 function drush_default_content_import() {
-  $modules = \Drupal::moduleHandler()->getModuleList();
   /** @var \Drupal\default_content\DefaultContentManagerInterface $default_content_manager */
   $default_content_manager = \Drupal::service('default_content.manager');
-  foreach ($modules as $module_name => $module) {
-    $default_content_manager->importContent($module_name);
-  }
+  $entities = $default_content_manager->importAllContent();
 
-  drush_print('Content imported');
+  drush_print(sprintf('%s Content imported', count($entities)));
 }
 
 /**

@@ -3,12 +3,16 @@
 namespace Drupal\Tests\default_content\Kernel;
 
 use Drupal\default_content\DefaultContentManager;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\field\Tests\EntityReference\EntityReferenceTestTrait;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
+use Drupal\node\NodeInterface;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\Entity\Vocabulary;
+use Drupal\taxonomy\TermInterface;
 use Drupal\user\Entity\User;
 
 /**
@@ -184,6 +188,72 @@ class DefaultContentManagerIntegrationTest extends KernelTestBase {
 
     $content = $this->defaultContentManager->exportModuleContent('default_content_export_test');
     $this->assertEqual($content['node'][$test_uuid], $expected_node);
+  }
+
+  protected function setupImport() {
+    \Drupal::service('module_installer')->install(['node', 'taxonomy', 'field']);
+    $this->installEntitySchema('node');
+    $this->installEntitySchema('taxonomy_term');
+
+    NodeType::create([
+      'type' => 'page',
+    ])->save();
+
+    FieldConfig::create([
+      'entity_type' => 'node',
+      'field_name' => 'body',
+      'bundle' => 'page',
+    ])->save();
+
+    \Drupal::service('module_installer')->install(['rest', 'serialization']);
+    \Drupal::service('module_installer')->install([
+      'default_content',
+    ]);
+
+    // Install the module but remove its content.
+    \Drupal::service('module_installer')->install([
+      'default_content_test',
+    ]);
+
+    // Cleanup previously installed content.
+    \Drupal::service('entity.repository')->loadEntityByUuid('node', '65c412a3-b83f-4efb-8a05-5a6ecea10ad4')->delete();
+    \Drupal::service('entity.repository')->loadEntityByUuid('taxonomy_term', '550f86ad-aa11-4047-953f-636d42889f85')->delete();
+  }
+
+  /**
+   * Tests the import mechanism.
+   */
+  public function testSingleImport() {
+    $this->setupImport();
+
+    $this->defaultContentManager = \Drupal::service('default_content.manager');
+
+    $entities = $this->defaultContentManager->importContent('default_content_test');
+    $this->assertInstanceOf(TermInterface::class, $entities['550f86ad-aa11-4047-953f-636d42889f85']);
+    $this->assertInstanceOf(NodeInterface::class, $entities['65c412a3-b83f-4efb-8a05-5a6ecea10ad4']);
+
+    $this->assertCount(2, $entities);
+    // Ensure the content can be actually loaded.
+    $this->assertEquals('A tag', Term::load($entities['550f86ad-aa11-4047-953f-636d42889f85']->id())->label());
+    $this->assertEquals('Imported node', Node::load($entities['65c412a3-b83f-4efb-8a05-5a6ecea10ad4']->id())->label());
+  }
+
+  /**
+   * Tests the import mechanism of all modules.
+   */
+  public function testImportAllContent() {
+    $this->setupImport();
+
+    $this->defaultContentManager = \Drupal::service('default_content.manager');
+
+    $entities = $this->defaultContentManager->importAllContent();
+    $this->assertInstanceOf(TermInterface::class, $entities['550f86ad-aa11-4047-953f-636d42889f85']);
+    $this->assertInstanceOf(NodeInterface::class, $entities['65c412a3-b83f-4efb-8a05-5a6ecea10ad4']);
+
+    $this->assertCount(2, $entities);
+    // Ensure the content can be actually loaded.
+    $this->assertEquals('A tag', Term::load($entities['550f86ad-aa11-4047-953f-636d42889f85']->id())->label());
+    $this->assertEquals('Imported node', Node::load($entities['65c412a3-b83f-4efb-8a05-5a6ecea10ad4']->id())->label());
   }
 
 }
