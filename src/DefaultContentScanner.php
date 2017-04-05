@@ -43,6 +43,9 @@ class DefaultContentScanner {
       $files[$file->uri] = $file;
     }
 
+    // Respect file name as a way to organise dependencies.
+    ksort($files);
+
     return $files;
   }
 
