@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\default_content\DefaultContentScanner.
- */
-
 namespace Drupal\default_content;
 
 /**
@@ -18,7 +13,7 @@ class DefaultContentScanner {
    * @param string $directory
    *   Absolute path to the directory to search.
    *
-   * @return array
+   * @return object[]
    *   List of stdClass objects with name and uri properties.
    */
   public function scan($directory) {

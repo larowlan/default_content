@@ -1,34 +1,34 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\default_content\DefaultContentServiceProvider.
- */
-
 namespace Drupal\default_content;
-use Drupal\Core\DependencyInjection\ServiceModifierInterface;
+
 use Drupal\Core\DependencyInjection\ContainerBuilder;
-use Drupal\Core\DependencyInjection\ServiceProviderInterface;
+use Drupal\Core\DependencyInjection\ServiceProviderBase;
+use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 
 /**
- * Creates a service modifier to hijack the rest typed link manager service.
+ * Adds customized normalizer to handle taxonomy hierarchy.
  */
-class DefaultContentServiceProvider implements ServiceModifierInterface, ServiceProviderInterface {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function register(ContainerBuilder $container) {}
+class DefaultContentServiceProvider extends ServiceProviderBase {
 
   /**
    * {@inheritdoc}
    */
   public function alter(ContainerBuilder $container) {
-    if ($link_manager = $container->getDefinition('rest.link_manager')) {
-      $link_manager->replaceArgument(0, new Reference('default_content.link_manager.type'));
-      $link_manager->replaceArgument(1, new Reference('default_content.link_manager.relation'));
-      $container->setDefinition('rest.link_manager', $link_manager);
+    $modules = $container->getParameter('container.modules');
+    // @todo Get rid of after https://www.drupal.org/node/2543726
+    if (isset($modules['taxonomy'])) {
+      // Add a normalizer service for term entities.
+      $service_definition = new Definition('Drupal\default_content\Normalizer\TermEntityNormalizer', [
+        new Reference('rest.link_manager'),
+        new Reference('entity.manager'),
+        new Reference('module_handler'),
+      ]);
+      // The priority must be higher than that of
+      // serializer.normalizer.entity.hal in hal.services.yml.
+      $service_definition->addTag('normalizer', ['priority' => 30]);
+      $container->setDefinition('default_content.normalizer.taxonomy_term.halt', $service_definition);
     }
   }
 

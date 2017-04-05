@@ -1,10 +1,4 @@
 services:
   default_content.manager:
     class: Drupal\default_content\DefaultContentManager
-    arguments: ['@serializer', '@plugin.manager.rest', '@current_user', '@entity.manager']
-  default_content.link_manager.type:
-      class: Drupal\default_content\LinkManager\TypeLinkManager
-      arguments: ['@cache.default']
-  default_content.link_manager.relation:
-      class: Drupal\default_content\LinkManager\RelationLinkManager
-      arguments: ['@cache.default', '@entity.manager']
+    arguments: ['@serializer', '@plugin.manager.rest', '@current_user', '@entity_type.manager', '@entity.repository', '@rest.link_manager', '@event_dispatcher', '@module_handler', '@info_parser']
