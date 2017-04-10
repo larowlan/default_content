@@ -3,28 +3,9 @@
 namespace Drupal\default_content;
 
 /**
- * An interface defining a default content importer.
+ * An interface defining a default content exporter.
  */
-interface DefaultContentManagerInterface {
-
-  /**
-   * Set the scanner.
-   *
-   * @param \Drupal\default_content\DefaultContentScanner $scanner
-   *   The system scanner.
-   */
-  public function setScanner(DefaultContentScanner $scanner);
-
-  /**
-   * Imports default content for a given module.
-   *
-   * @param string $module
-   *   The module to create the default content for.
-   *
-   * @return array[\Drupal\Core\Entity\EntityInterface]
-   *   The created entities.
-   */
-  public function importContent($module);
+interface ExporterInterface {
 
   /**
    * Exports a single entity as importContent expects it.
@@ -71,6 +52,6 @@ interface DefaultContentManagerInterface {
    * @param string $folder
    *   The folder to write files into.
    */
-  public function writeDefaultContent($serialized_by_type, $folder);
+  public function writeDefaultContent(array $serialized_by_type, $folder);
 
 }
