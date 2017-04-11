@@ -2,26 +2,22 @@
 
 namespace Drupal\Tests\default_content\Kernel;
 
-use Drupal\default_content\DefaultContentManager;
-use Drupal\field\Entity\FieldConfig;
-use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\default_content\Exporter;
 use Drupal\field\Tests\EntityReference\EntityReferenceTestTrait;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
-use Drupal\node\NodeInterface;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\Entity\Vocabulary;
-use Drupal\taxonomy\TermInterface;
 use Drupal\user\Entity\User;
 
 /**
  * Tests export functionality.
  *
- * @coversDefaultClass \Drupal\default_content\DefaultContentManager
+ * @coversDefaultClass \Drupal\default_content\Exporter
  * @group default_content
  */
-class DefaultContentManagerIntegrationTest extends KernelTestBase {
+class ExporterIntegrationTest extends KernelTestBase {
 
   use EntityReferenceTestTrait;
 
@@ -31,11 +27,11 @@ class DefaultContentManagerIntegrationTest extends KernelTestBase {
   public static $modules = ['system'];
 
   /**
-   * The tested default content manager.
+   * The tested default content exporter.
    *
-   * @var \Drupal\default_content\DefaultContentManager
+   * @var \Drupal\default_content\Exporter
    */
-  protected $defaultContentManager;
+  protected $exporter;
 
   /**
    * {@inheritdoc}
@@ -55,7 +51,7 @@ class DefaultContentManagerIntegrationTest extends KernelTestBase {
       'default_content',
     ]);
     \Drupal::service('router.builder')->rebuild();
-    $this->defaultContentManager = \Drupal::service('default_content.manager');
+    $this->exporter = \Drupal::service('default_content.exporter');
 
     $vocabulary = Vocabulary::create(['vid' => 'test']);
     $vocabulary->save();
@@ -66,10 +62,10 @@ class DefaultContentManagerIntegrationTest extends KernelTestBase {
     /** @var \Symfony\Component\Serializer\Serializer $serializer */
     $serializer = \Drupal::service('serializer');
     \Drupal::service('rest.link_manager')
-      ->setLinkDomain(DefaultContentManager::LINK_DOMAIN);
+      ->setLinkDomain($this->container->getParameter('default_content.link_domain'));
     $expected = $serializer->serialize($term, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
 
-    $exported = $this->defaultContentManager->exportContent('taxonomy_term', $term->id());
+    $exported = $this->exporter->exportContent('taxonomy_term', $term->id());
     $exported_decoded = json_decode($exported);
 
     // Ensure the proper UUID is part of it.
@@ -85,7 +81,7 @@ class DefaultContentManagerIntegrationTest extends KernelTestBase {
     ]);
     $child_term->save();
     // Make sure parent relation is exported.
-    $exported = $this->defaultContentManager->exportContent('taxonomy_term', $child_term->id());
+    $exported = $this->exporter->exportContent('taxonomy_term', $child_term->id());
     $relation_uri = 'http://drupal.org/rest/relation/taxonomy_term/test/parent';
     $exported_decoded = json_decode($exported);
     $this->assertFalse(empty($exported_decoded->_links->{$relation_uri}));
@@ -98,7 +94,7 @@ class DefaultContentManagerIntegrationTest extends KernelTestBase {
   public function testExportWithReferences() {
     \Drupal::service('module_installer')->install(['node', 'default_content']);
     \Drupal::service('router.builder')->rebuild();
-    $this->defaultContentManager = \Drupal::service('default_content.manager');
+    $this->exporter = \Drupal::service('default_content.exporter');
 
     $user = User::create(['name' => 'my username']);
     $user->save();
@@ -119,11 +115,11 @@ class DefaultContentManagerIntegrationTest extends KernelTestBase {
     /** @var \Symfony\Component\Serializer\Serializer $serializer */
     $serializer = \Drupal::service('serializer');
     \Drupal::service('rest.link_manager')
-      ->setLinkDomain(DefaultContentManager::LINK_DOMAIN);
+      ->setLinkDomain($this->container->getParameter('default_content.link_domain'));
     $expected_node = $serializer->serialize($node, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
     $expected_user = $serializer->serialize($user, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
 
-    $exported_by_entity_type = $this->defaultContentManager->exportContentWithReferences('node', $node->id());
+    $exported_by_entity_type = $this->exporter->exportContentWithReferences('node', $node->id());
 
     // Ensure that the node type is not tryed to be exported.
     $this->assertEqual(array_keys($exported_by_entity_type), ['node', 'user']);
@@ -157,7 +153,7 @@ class DefaultContentManagerIntegrationTest extends KernelTestBase {
     // Loop reference.
     $node1->{$field_name}->target_id = $node3->id();
     $node1->save();
-    $exported_by_entity_type = $this->defaultContentManager->exportContentWithReferences('node', $node3->id());
+    $exported_by_entity_type = $this->exporter->exportContentWithReferences('node', $node3->id());
     // Ensure all 3 nodes are exported.
     $this->assertEquals(3, count($exported_by_entity_type['node']));
   }
@@ -172,7 +168,7 @@ class DefaultContentManagerIntegrationTest extends KernelTestBase {
       'default_content_export_test',
     ]);
     \Drupal::service('router.builder')->rebuild();
-    $this->defaultContentManager = \Drupal::service('default_content.manager');
+    $this->exporter = \Drupal::service('default_content.exporter');
 
     $test_uuid = '0e45d92f-1919-47cd-8b60-964a8a761292';
     $node_type = NodeType::create(['type' => 'test']);
@@ -183,77 +179,11 @@ class DefaultContentManagerIntegrationTest extends KernelTestBase {
     $node = Node::load($node->id());
     $serializer = \Drupal::service('serializer');
     \Drupal::service('rest.link_manager')
-      ->setLinkDomain(DefaultContentManager::LINK_DOMAIN);
+      ->setLinkDomain($this->container->getParameter('default_content.link_domain'));
     $expected_node = $serializer->serialize($node, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
 
-    $content = $this->defaultContentManager->exportModuleContent('default_content_export_test');
+    $content = $this->exporter->exportModuleContent('default_content_export_test');
     $this->assertEqual($content['node'][$test_uuid], $expected_node);
-  }
-
-  protected function setupImport() {
-    \Drupal::service('module_installer')->install(['node', 'taxonomy', 'field']);
-    $this->installEntitySchema('node');
-    $this->installEntitySchema('taxonomy_term');
-
-    NodeType::create([
-      'type' => 'page',
-    ])->save();
-
-    FieldConfig::create([
-      'entity_type' => 'node',
-      'field_name' => 'body',
-      'bundle' => 'page',
-    ])->save();
-
-    \Drupal::service('module_installer')->install(['rest', 'serialization']);
-    \Drupal::service('module_installer')->install([
-      'default_content',
-    ]);
-
-    // Install the module but remove its content.
-    \Drupal::service('module_installer')->install([
-      'default_content_test',
-    ]);
-
-    // Cleanup previously installed content.
-    \Drupal::service('entity.repository')->loadEntityByUuid('node', '65c412a3-b83f-4efb-8a05-5a6ecea10ad4')->delete();
-    \Drupal::service('entity.repository')->loadEntityByUuid('taxonomy_term', '550f86ad-aa11-4047-953f-636d42889f85')->delete();
-  }
-
-  /**
-   * Tests the import mechanism.
-   */
-  public function testSingleImport() {
-    $this->setupImport();
-
-    $this->defaultContentManager = \Drupal::service('default_content.manager');
-
-    $entities = $this->defaultContentManager->importContent('default_content_test');
-    $this->assertInstanceOf(TermInterface::class, $entities['550f86ad-aa11-4047-953f-636d42889f85']);
-    $this->assertInstanceOf(NodeInterface::class, $entities['65c412a3-b83f-4efb-8a05-5a6ecea10ad4']);
-
-    $this->assertCount(2, $entities);
-    // Ensure the content can be actually loaded.
-    $this->assertEquals('A tag', Term::load($entities['550f86ad-aa11-4047-953f-636d42889f85']->id())->label());
-    $this->assertEquals('Imported node', Node::load($entities['65c412a3-b83f-4efb-8a05-5a6ecea10ad4']->id())->label());
-  }
-
-  /**
-   * Tests the import mechanism of all modules.
-   */
-  public function testImportAllContent() {
-    $this->setupImport();
-
-    $this->defaultContentManager = \Drupal::service('default_content.manager');
-
-    $entities = $this->defaultContentManager->importAllContent();
-    $this->assertInstanceOf(TermInterface::class, $entities['550f86ad-aa11-4047-953f-636d42889f85']);
-    $this->assertInstanceOf(NodeInterface::class, $entities['65c412a3-b83f-4efb-8a05-5a6ecea10ad4']);
-
-    $this->assertCount(2, $entities);
-    // Ensure the content can be actually loaded.
-    $this->assertEquals('A tag', Term::load($entities['550f86ad-aa11-4047-953f-636d42889f85']->id())->label());
-    $this->assertEquals('Imported node', Node::load($entities['65c412a3-b83f-4efb-8a05-5a6ecea10ad4']->id())->label());
   }
 
 }
