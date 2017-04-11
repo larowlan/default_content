@@ -5,16 +5,10 @@ namespace Drupal\default_content;
 /**
  * A scanner to find YAML files in a given folder.
  */
-class DefaultContentScanner {
+class Scanner implements ScannerInterface {
 
   /**
-   * Returns a list of file objects.
-   *
-   * @param string $directory
-   *   Absolute path to the directory to search.
-   *
-   * @return object[]
-   *   List of stdClass objects with name and uri properties.
+   * {@inheritdoc}
    */
   public function scan($directory) {
     // Use Unix paths regardless of platform, skip dot directories, follow
@@ -27,7 +21,7 @@ class DefaultContentScanner {
     $directory_iterator = new \RecursiveDirectoryIterator($directory, $flags);
     $iterator = new \RecursiveIteratorIterator($directory_iterator);
 
-    $files = array();
+    $files = [];
     foreach ($iterator as $fileinfo) {
       /* @var \SplFileInfo $fileinfo */
 

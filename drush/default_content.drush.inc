@@ -9,6 +9,12 @@
  * Implements hook_drush_command().
  */
 function default_content_drush_command() {
+  $items['default-content-import'] = [
+    'description' => dt('Imports all available default content'),
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
+    'core' => ['8+'],
+    'aliases' => ['dcoi'],
+  ];
   $items['default-content-export'] = [
     'description' => dt('Exports a single entity'),
     'arguments' => [
@@ -46,6 +52,17 @@ function default_content_drush_command() {
 }
 
 /**
+ * Imports all default content provided by all modules.
+ */
+function drush_default_content_import() {
+  /** @var \Drupal\default_content\DefaultContentManagerInterface $default_content_manager */
+  $default_content_manager = \Drupal::service('default_content.manager');
+  $entities = $default_content_manager->importAllContent();
+
+  drush_print(sprintf('%s Content imported', count($entities)));
+}
+
+/**
  * Exports a piece of content into the stdout or into a file.
  *
  * @param string $entity_type_id
@@ -54,9 +71,9 @@ function default_content_drush_command() {
  *   The entity ID to export.
  */
 function drush_default_content_export($entity_type_id, $entity_id) {
-  /** @var \Drupal\default_content\DefaultContentManagerInterface $manager */
-  $manager = \Drupal::service('default_content.manager');
-  $export = $manager->exportContent($entity_type_id, $entity_id);
+  /** @var \Drupal\default_content\DefaultContentExporterInterface $exporter */
+  $exporter = \Drupal::service('default_content.exporter');
+  $export = $exporter->exportContent($entity_type_id, $entity_id);
 
   if ($file = drush_get_option('file')) {
     file_put_contents($file, $export);
@@ -75,20 +92,20 @@ function drush_default_content_export($entity_type_id, $entity_id) {
  *   (Optional) The entity ID to export or all entities will be exported.
  */
 function drush_default_content_export_references($entity_type_id, $entity_id = NULL) {
-  /** @var \Drupal\default_content\DefaultContentManagerInterface $manager */
-  $manager = \Drupal::service('default_content.manager');
+  /** @var \Drupal\default_content\DefaultContentExporterInterface $exporter */
+  $exporter = \Drupal::service('default_content.exporter');
 
   $folder = drush_get_option('folder', '.');
-  if (is_null($entity_id) && ($entities = \Drupal::entityQuery($entity_type_id)->execute())) {
-    // @todo Add paging.
-    foreach ($entities as $entity_id) {
-      $serialized_by_type = $manager->exportContentWithReferences($entity_type_id, $entity_id);
-      $manager->writeDefaultContent($serialized_by_type, $folder);
-    }
+  if (is_null($entity_id)) {
+    $entities = \Drupal::entityQuery($entity_type_id)->execute();
   }
   else {
-    $serialized_by_type = $manager->exportContentWithReferences($entity_type_id, $entity_id);
-    $manager->writeDefaultContent($serialized_by_type, $folder);
+    $entities = [$entity_id];
+  }
+  // @todo Add paging.
+  foreach ($entities as $entity_id) {
+    $serialized_by_type = $exporter->exportContentWithReferences($entity_type_id, $entity_id);
+    $exporter->writeDefaultContent($serialized_by_type, $folder);
   }
 }
 
@@ -99,9 +116,11 @@ function drush_default_content_export_references($entity_type_id, $entity_id = N
  *   The module name to export.
  */
 function drush_default_content_export_module($module_name) {
-  /** @var \Drupal\default_content\DefaultContentManagerInterface $manager */
-  $manager = \Drupal::service('default_content.manager');
-  $serialized_by_type = $manager->exportModuleContent($module_name);
-  $module_folder = \Drupal::moduleHandler()->getModule($module_name)->getPath() . '/content';
-  $manager->writeDefaultContent($serialized_by_type, $module_folder);
+  /** @var \Drupal\default_content\DefaultContentExporterInterface $exporter */
+  $exporter = \Drupal::service('default_content.exporter');
+  $serialized_by_type = $exporter->exportModuleContent($module_name);
+  $module_folder = \Drupal::moduleHandler()
+    ->getModule($module_name)
+    ->getPath() . '/content';
+  $exporter->writeDefaultContent($serialized_by_type, $module_folder);
 }
