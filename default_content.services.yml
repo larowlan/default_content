@@ -9,3 +9,7 @@ services:
   default_content.exporter:
     class: Drupal\default_content\Exporter
     arguments: ['@serializer', '@entity_type.manager', '@entity.repository', '@rest.link_manager', '@event_dispatcher', '@module_handler', '@info_parser', '%default_content.link_domain%']
+  default_content.config_subscriber:
+    class: Drupal\default_content\Config\DefaultContentConfigSubscriber
+    arguments: ['@default_content.importer']
+    tags: [{ name: event_subscriber }]
