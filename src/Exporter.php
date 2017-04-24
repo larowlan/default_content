@@ -132,10 +132,10 @@ class Exporter implements ExporterInterface {
     $entity = $storage->load($entity_id);
 
     if (!$entity) {
-      throw new \InvalidArgumentException(new FormattableMarkup('Entity @type with ID @id does not exist', ['@type' => $entity_type_id, '@id' => $entity_id]));
+      throw new \InvalidArgumentException(sprintf('Entity "%s" with ID "%s" does not exist', $entity_type_id, $entity_id));
     }
     if (!($entity instanceof ContentEntityInterface)) {
-      throw new \InvalidArgumentException(new FormattableMarkup('Entity @type with ID @id should be a content entity', ['@type' => $entity_type_id, '@id' => $entity_id]));
+      throw new \InvalidArgumentException(sprintf('Entity "%s" with ID "%s" should be a content entity', $entity_type_id, $entity_id));
     }
 
     $entities = [$entity->uuid() => $entity];

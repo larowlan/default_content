@@ -143,14 +143,9 @@ class Importer implements ImporterInterface {
 
           // Throw an exception when this UUID already exists.
           if (isset($file_map[$item_uuid])) {
-            $args = [
-              '@uuid' => $item_uuid,
-              '@first' => $file_map[$item_uuid]->uri,
-              '@second' => $file->uri,
-            ];
             // Reset link domain.
             $this->linkManager->setLinkDomain(FALSE);
-            throw new \Exception(new FormattableMarkup('Default content with uuid @uuid exists twice: @first @second', $args));
+            throw new \Exception(sprintf('Default content with uuid "%s" exists twice: "%s" "%s"', $item_uuid, $file_map[$item_uuid]->uri, $file->uri));
           }
 
           // Store the entity type with the file.
