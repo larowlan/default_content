@@ -41,6 +41,8 @@ interface ExporterInterface {
    *
    * @return string[][]
    *   The serialized entities keyed by entity type and UUID.
+   *
+   * @throws \InvalidArgumentException if any UUID is not found.
    */
   public function exportModuleContent($module_name);
 

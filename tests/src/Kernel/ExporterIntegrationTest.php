@@ -186,4 +186,22 @@ class ExporterIntegrationTest extends KernelTestBase {
     $this->assertEqual($content['node'][$test_uuid], $expected_node);
   }
 
+  /**
+   * Tests exportModuleContent()
+   */
+  public function testModuleExportException() {
+    \Drupal::service('module_installer')->install([
+      'node',
+      'default_content',
+      'default_content_export_test',
+    ]);
+    \Drupal::service('router.builder')->rebuild();
+    $this->defaultContentManager = \Drupal::service('default_content.exporter');
+
+    $this->setExpectedException(\InvalidArgumentException::class);
+
+    // Should throw an exception for missing uuid in default_content_export_test
+    $this->defaultContentManager->exportModuleContent('default_content_export_test');
+  }
+
 }

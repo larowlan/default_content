@@ -165,6 +165,9 @@ class Exporter implements ExporterInterface {
     foreach ($info['default_content'] as $entity_type => $uuids) {
       foreach ($uuids as $uuid) {
         $entity = $this->entityRepository->loadEntityByUuid($entity_type, $uuid);
+        if (!$entity) {
+          throw new \InvalidArgumentException(sprintf('Entity "%s" with UUID "%s" does not exist', $entity_type, $uuid));
+        }
         $exported_content[$entity_type][$uuid] = $this->exportContent($entity_type, $entity->id());
       }
     }
