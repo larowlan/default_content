@@ -6,10 +6,12 @@ use Drupal\Component\Graph\Graph;
 use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Session\AccountSwitcherInterface;
 use Drupal\default_content\Event\DefaultContentEvents;
 use Drupal\default_content\Event\ImportEvent;
 use Drupal\rest\LinkManager\LinkManagerInterface;
 use Drupal\rest\Plugin\Type\ResourcePluginManager;
+use Drupal\user\EntityOwnerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Serializer\Serializer;
 
@@ -84,6 +86,13 @@ class Importer implements ImporterInterface {
   protected $scanner;
 
   /**
+   * The account switcher.
+   *
+   * @var \Drupal\Core\Session\AccountSwitcherInterface
+   */
+  protected $accountSwitcher;
+
+  /**
    * Constructs the default content manager.
    *
    * @param \Symfony\Component\Serializer\Serializer $serializer
@@ -100,8 +109,10 @@ class Importer implements ImporterInterface {
    *   The file scanner.
    * @param string $link_domain
    *   Defines relation domain URI for entity links.
+   * @param \Drupal\Core\Session\AccountSwitcherInterface $account_switcher
+   *   The account switcher.
    */
-  public function __construct(Serializer $serializer, ResourcePluginManager $resource_plugin_manager, EntityTypeManagerInterface $entity_type_manager, LinkManagerInterface $link_manager, EventDispatcherInterface $event_dispatcher, ScannerInterface $scanner, $link_domain) {
+  public function __construct(Serializer $serializer, ResourcePluginManager $resource_plugin_manager, EntityTypeManagerInterface $entity_type_manager, LinkManagerInterface $link_manager, EventDispatcherInterface $event_dispatcher, ScannerInterface $scanner, $link_domain, AccountSwitcherInterface $account_switcher) {
     $this->serializer = $serializer;
     $this->resourcePluginManager = $resource_plugin_manager;
     $this->entityTypeManager = $entity_type_manager;
@@ -109,6 +120,7 @@ class Importer implements ImporterInterface {
     $this->eventDispatcher = $event_dispatcher;
     $this->scanner = $scanner;
     $this->linkDomain = $link_domain;
+    $this->accountSwitcher = $account_switcher;
   }
 
   /**
@@ -119,6 +131,8 @@ class Importer implements ImporterInterface {
     $folder = drupal_get_path('module', $module) . "/content";
 
     if (file_exists($folder)) {
+      $root_user = $this->entityTypeManager->getStorage('user')->load(1);
+      $this->accountSwitcher->switchTo($root_user);
       $file_map = [];
       foreach ($this->entityTypeManager->getDefinitions() as $entity_type_id => $entity_type) {
         $reflection = new \ReflectionClass($entity_type->getClass());
@@ -182,11 +196,16 @@ class Importer implements ImporterInterface {
           $class = $definition['serialization_class'];
           $entity = $this->serializer->deserialize($contents, $class, 'hal_json', ['request_method' => 'POST']);
           $entity->enforceIsNew(TRUE);
+          // Ensure that the entity is not owned by the anonymous user.
+          if ($entity instanceof EntityOwnerInterface && empty($entity->getOwnerId())) {
+            $entity->setOwner($root_user);
+          }
           $entity->save();
           $created[$entity->uuid()] = $entity;
         }
       }
       $this->eventDispatcher->dispatch(DefaultContentEvents::IMPORT, new ImportEvent($created, $module));
+      $this->accountSwitcher->switchBack();
     }
     // Reset the tree.
     $this->resetTree();

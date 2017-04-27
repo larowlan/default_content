@@ -6,6 +6,7 @@ use Drupal\Core\Config\FileStorage;
 use Drupal\simpletest\BrowserTestBase;
 use Drupal\simpletest\ContentTypeCreationTrait;
 use Drupal\simpletest\NodeCreationTrait;
+use Drupal\user\Entity\User;
 
 /**
  * Test import of default content.
@@ -29,6 +30,14 @@ class DefaultContentTest extends BrowserTestBase {
    */
   protected function setUp() {
     parent::setUp();
+    // Create user 2 with the correct UUID.
+    User::create([
+      'uid' => 2,
+      'uuid' => 'ab301be5-7017-4ff8-b2d3-09dc0a30bd43',
+      'name' => 'User 2',
+      'mail' => 'user2@example.com',
+      'status' => TRUE,
+    ])->save();
     $this->createContentType(array('type' => 'page'));
   }
 
@@ -77,6 +86,14 @@ class DefaultContentTest extends BrowserTestBase {
     $node = $this->getNodeByTitle('Imported node');
     $this->assertEquals($node->body->value, 'Crikey it works!');
     $this->assertEquals($node->getType(), 'page');
+    $this->assertSame('2', $node->getOwnerId(), 'The node created is owned by user 2');
+
+    $node = $this->getNodeByTitle('Imported node with owned by user 1');
+    $this->assertSame('1', $node->getOwnerId(), 'The node created is owned by user 1');
+
+    $node = $this->getNodeByTitle('Imported node with owned by user that does not exist');
+    $this->assertSame('1', $node->getOwnerId(), 'The node created is owned by user 1');
+
     $terms = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadMultiple();
     $term = reset($terms);
     $this->assertTrue(!empty($term));

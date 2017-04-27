@@ -5,7 +5,7 @@ services:
     class: Drupal\default_content\Scanner
   default_content.importer:
     class: Drupal\default_content\Importer
-    arguments: ['@serializer', '@plugin.manager.rest', '@entity_type.manager', '@rest.link_manager', '@event_dispatcher', '@default_content.scanner', '%default_content.link_domain%']
+    arguments: ['@serializer', '@plugin.manager.rest', '@entity_type.manager', '@rest.link_manager', '@event_dispatcher', '@default_content.scanner', '%default_content.link_domain%', '@account_switcher']
   default_content.exporter:
     class: Drupal\default_content\Exporter
     arguments: ['@serializer', '@entity_type.manager', '@entity.repository', '@rest.link_manager', '@event_dispatcher', '@module_handler', '@info_parser', '%default_content.link_domain%']
