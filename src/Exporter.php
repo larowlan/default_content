@@ -2,7 +2,6 @@
 
 namespace Drupal\default_content;
 
-use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -10,7 +9,7 @@ use Drupal\Core\Extension\InfoParserInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\default_content\Event\DefaultContentEvents;
 use Drupal\default_content\Event\ExportEvent;
-use Drupal\rest\LinkManager\LinkManagerInterface;
+use Drupal\hal\LinkManager\LinkManagerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Serializer\Serializer;
 
@@ -66,7 +65,7 @@ class Exporter implements ExporterInterface {
   /**
    * The link manager service.
    *
-   * @var \Drupal\rest\LinkManager\LinkManagerInterface
+   * @var \Drupal\hal\LinkManager\LinkManagerInterface
    */
   protected $linkManager;
 
@@ -86,7 +85,7 @@ class Exporter implements ExporterInterface {
    *   The entity type manager service.
    * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
    *   The entity repository service.
-   * @param \Drupal\rest\LinkManager\LinkManagerInterface $link_manager
+   * @param \Drupal\hal\LinkManager\LinkManagerInterface $link_manager
    *   The link manager service.
    * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
    *   The event dispatcher.

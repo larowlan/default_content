@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\default_content\Kernel;
 
-use Drupal\default_content\Exporter;
 use Drupal\field\Tests\EntityReference\EntityReferenceTestTrait;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\node\Entity\Node;
@@ -61,7 +60,7 @@ class ExporterIntegrationTest extends KernelTestBase {
 
     /** @var \Symfony\Component\Serializer\Serializer $serializer */
     $serializer = \Drupal::service('serializer');
-    \Drupal::service('rest.link_manager')
+    \Drupal::service('hal.link_manager')
       ->setLinkDomain($this->container->getParameter('default_content.link_domain'));
     $expected = $serializer->serialize($term, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
 
@@ -114,7 +113,7 @@ class ExporterIntegrationTest extends KernelTestBase {
 
     /** @var \Symfony\Component\Serializer\Serializer $serializer */
     $serializer = \Drupal::service('serializer');
-    \Drupal::service('rest.link_manager')
+    \Drupal::service('hal.link_manager')
       ->setLinkDomain($this->container->getParameter('default_content.link_domain'));
     $expected_node = $serializer->serialize($node, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
     $expected_user = $serializer->serialize($user, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
@@ -178,7 +177,7 @@ class ExporterIntegrationTest extends KernelTestBase {
     $node->save();
     $node = Node::load($node->id());
     $serializer = \Drupal::service('serializer');
-    \Drupal::service('rest.link_manager')
+    \Drupal::service('hal.link_manager')
       ->setLinkDomain($this->container->getParameter('default_content.link_domain'));
     $expected_node = $serializer->serialize($node, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
 
@@ -200,7 +199,7 @@ class ExporterIntegrationTest extends KernelTestBase {
 
     $this->setExpectedException(\InvalidArgumentException::class);
 
-    // Should throw an exception for missing uuid in default_content_export_test
+    // Should throw an exception for missing uuid for the testing module.
     $this->defaultContentManager->exportModuleContent('default_content_export_test');
   }
 

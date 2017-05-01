@@ -4,5 +4,5 @@ description: 'Imports default content when a module is enabled'
 package: Web services
 core: 8.x
 dependencies:
-  - hal
-  - rest
+  - drupal:hal (>=8.3.x)
+  - drupal:rest

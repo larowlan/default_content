@@ -3,13 +3,12 @@
 namespace Drupal\default_content;
 
 use Drupal\Component\Graph\Graph;
-use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountSwitcherInterface;
 use Drupal\default_content\Event\DefaultContentEvents;
 use Drupal\default_content\Event\ImportEvent;
-use Drupal\rest\LinkManager\LinkManagerInterface;
+use Drupal\hal\LinkManager\LinkManagerInterface;
 use Drupal\rest\Plugin\Type\ResourcePluginManager;
 use Drupal\user\EntityOwnerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -67,7 +66,7 @@ class Importer implements ImporterInterface {
   /**
    * The link manager service.
    *
-   * @var \Drupal\rest\LinkManager\LinkManagerInterface
+   * @var \Drupal\hal\LinkManager\LinkManagerInterface
    */
   protected $linkManager;
 
@@ -101,7 +100,7 @@ class Importer implements ImporterInterface {
    *   The rest resource plugin manager.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
-   * @param \Drupal\rest\LinkManager\LinkManagerInterface $link_manager
+   * @param \Drupal\hal\LinkManager\LinkManagerInterface $link_manager
    *   The link manager service.
    * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
    *   The event dispatcher.

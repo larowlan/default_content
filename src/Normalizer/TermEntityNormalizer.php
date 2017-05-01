@@ -24,7 +24,7 @@ class TermEntityNormalizer extends ContentEntityNormalizer {
   /**
    * {@inheritdoc}
    */
-  public function normalize($entity, $format = NULL, array $context = array()) {
+  public function normalize($entity, $format = NULL, array $context = []) {
     if ($parents = $this->getTermStorage()->loadParents($entity->id())) {
       $entity->parent->setValue(array_keys($parents));
     }

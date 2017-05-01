@@ -3,10 +3,10 @@
 namespace Drupal\Tests\default_content\Functional;
 
 use Drupal\Core\Config\FileStorage;
-use Drupal\simpletest\BrowserTestBase;
 use Drupal\simpletest\ContentTypeCreationTrait;
 use Drupal\simpletest\NodeCreationTrait;
 use Drupal\user\Entity\User;
+use Drupal\Tests\BrowserTestBase;
 
 /**
  * Test import of default content.
@@ -23,7 +23,7 @@ class DefaultContentTest extends BrowserTestBase {
    *
    * @var array
    */
-  public static $modules = array('rest', 'taxonomy', 'hal', 'default_content');
+  public static $modules = ['rest', 'taxonomy', 'hal', 'default_content'];
 
   /**
    * {@inheritdoc}
@@ -38,7 +38,7 @@ class DefaultContentTest extends BrowserTestBase {
       'mail' => 'user2@example.com',
       'status' => TRUE,
     ])->save();
-    $this->createContentType(array('type' => 'page'));
+    $this->createContentType(['type' => 'page']);
   }
 
   /**
@@ -46,7 +46,7 @@ class DefaultContentTest extends BrowserTestBase {
    */
   public function testImport() {
     // Enable the module and import the content.
-    \Drupal::service('module_installer')->install(array('default_content_test'), TRUE);
+    \Drupal::service('module_installer')->install(['default_content_test'], TRUE);
     $this->rebuildContainer();
 
     $this->doPostInstallTests();

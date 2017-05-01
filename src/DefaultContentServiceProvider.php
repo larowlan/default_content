@@ -4,6 +4,7 @@ namespace Drupal\default_content;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\DependencyInjection\ServiceProviderBase;
+use Drupal\default_content\Normalizer\TermEntityNormalizer;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 
@@ -20,8 +21,8 @@ class DefaultContentServiceProvider extends ServiceProviderBase {
     // @todo Get rid of after https://www.drupal.org/node/2543726
     if (isset($modules['taxonomy'])) {
       // Add a normalizer service for term entities.
-      $service_definition = new Definition('Drupal\default_content\Normalizer\TermEntityNormalizer', [
-        new Reference('rest.link_manager'),
+      $service_definition = new Definition(TermEntityNormalizer::class, [
+        new Reference('hal.link_manager'),
         new Reference('entity.manager'),
         new Reference('module_handler'),
       ]);
