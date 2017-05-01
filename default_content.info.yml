@@ -5,4 +5,3 @@ package: Web services
 core: 8.x
 dependencies:
   - drupal:hal (>=8.3.x)
-  - drupal:rest

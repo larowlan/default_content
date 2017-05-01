@@ -9,7 +9,6 @@ use Drupal\Core\Session\AccountSwitcherInterface;
 use Drupal\default_content\Event\DefaultContentEvents;
 use Drupal\default_content\Event\ImportEvent;
 use Drupal\hal\LinkManager\LinkManagerInterface;
-use Drupal\rest\Plugin\Type\ResourcePluginManager;
 use Drupal\user\EntityOwnerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Serializer\Serializer;
@@ -34,13 +33,6 @@ class Importer implements ImporterInterface {
    * @var \Symfony\Component\Serializer\Serializer
    */
   protected $serializer;
-
-  /**
-   * The rest resource plugin manager.
-   *
-   * @var \Drupal\rest\Plugin\Type\ResourcePluginManager
-   */
-  protected $resourcePluginManager;
 
   /**
    * The entity type manager.
@@ -96,8 +88,6 @@ class Importer implements ImporterInterface {
    *
    * @param \Symfony\Component\Serializer\Serializer $serializer
    *   The serializer service.
-   * @param \Drupal\rest\Plugin\Type\ResourcePluginManager $resource_plugin_manager
-   *   The rest resource plugin manager.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
    * @param \Drupal\hal\LinkManager\LinkManagerInterface $link_manager
@@ -111,9 +101,8 @@ class Importer implements ImporterInterface {
    * @param \Drupal\Core\Session\AccountSwitcherInterface $account_switcher
    *   The account switcher.
    */
-  public function __construct(Serializer $serializer, ResourcePluginManager $resource_plugin_manager, EntityTypeManagerInterface $entity_type_manager, LinkManagerInterface $link_manager, EventDispatcherInterface $event_dispatcher, ScannerInterface $scanner, $link_domain, AccountSwitcherInterface $account_switcher) {
+  public function __construct(Serializer $serializer, EntityTypeManagerInterface $entity_type_manager, LinkManagerInterface $link_manager, EventDispatcherInterface $event_dispatcher, ScannerInterface $scanner, $link_domain, AccountSwitcherInterface $account_switcher) {
     $this->serializer = $serializer;
-    $this->resourcePluginManager = $resource_plugin_manager;
     $this->entityTypeManager = $entity_type_manager;
     $this->linkManager = $link_manager;
     $this->eventDispatcher = $event_dispatcher;
@@ -189,10 +178,8 @@ class Importer implements ImporterInterface {
         if (!empty($file_map[$link])) {
           $file = $file_map[$link];
           $entity_type_id = $file->entity_type_id;
-          $resource = $this->resourcePluginManager->createInstance('entity:' . $entity_type_id);
-          $definition = $resource->getPluginDefinition();
+          $class = $this->entityTypeManager->getDefinition($entity_type_id)->getClass();
           $contents = $this->parseFile($file);
-          $class = $definition['serialization_class'];
           $entity = $this->serializer->deserialize($contents, $class, 'hal_json', ['request_method' => 'POST']);
           $entity->enforceIsNew(TRUE);
           // Ensure that the entity is not owned by the anonymous user.

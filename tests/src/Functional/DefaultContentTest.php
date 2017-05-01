@@ -23,7 +23,7 @@ class DefaultContentTest extends BrowserTestBase {
    *
    * @var array
    */
-  public static $modules = ['rest', 'taxonomy', 'hal', 'default_content'];
+  public static $modules = ['taxonomy', 'hal', 'default_content'];
 
   /**
    * {@inheritdoc}
