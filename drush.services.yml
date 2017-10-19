@@ -1,0 +1,6 @@
+services:
+  default_content.commands:
+    class: \Drupal\default_content\Commands\DefaultContentCommands
+    arguments: ['@default_content.exporter']
+    tags:
+      - { name: drush.command }
