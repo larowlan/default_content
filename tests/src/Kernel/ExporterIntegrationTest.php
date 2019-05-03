@@ -115,6 +115,7 @@ class ExporterIntegrationTest extends KernelTestBase {
     $serializer = \Drupal::service('serializer');
     \Drupal::service('hal.link_manager')
       ->setLinkDomain($this->container->getParameter('default_content.link_domain'));
+    \Drupal::service('account_switcher')->switchTo(User::load(1));
     $expected_node = $serializer->serialize($node, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
     $expected_user = $serializer->serialize($user, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
 

@@ -7,6 +7,7 @@ use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\InfoParserInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Session\AccountSwitcherInterface;
 use Drupal\default_content\Event\DefaultContentEvents;
 use Drupal\default_content\Event\ExportEvent;
 use Drupal\hal\LinkManager\LinkManagerInterface;
@@ -77,6 +78,13 @@ class Exporter implements ExporterInterface {
   protected $eventDispatcher;
 
   /**
+   * The account switcher.
+   *
+   * @var \Drupal\Core\Session\AccountSwitcherInterface
+   */
+  protected $accountSwitcher;
+
+  /**
    * Constructs the default content manager.
    *
    * @param \Symfony\Component\Serializer\Serializer $serializer
@@ -95,8 +103,10 @@ class Exporter implements ExporterInterface {
    *   The info file parser.
    * @param string $link_domain
    *   Defines relation domain URI for entity links.
+   * @param \Drupal\Core\Session\AccountSwitcherInterface $account_switcher
+   *   The account switcher.
    */
-  public function __construct(Serializer $serializer, EntityTypeManagerInterface $entity_type_manager, EntityRepositoryInterface $entity_repository, LinkManagerInterface $link_manager, EventDispatcherInterface $event_dispatcher, ModuleHandlerInterface $module_handler, InfoParserInterface $info_parser, $link_domain) {
+  public function __construct(Serializer $serializer, EntityTypeManagerInterface $entity_type_manager, EntityRepositoryInterface $entity_repository, LinkManagerInterface $link_manager, EventDispatcherInterface $event_dispatcher, ModuleHandlerInterface $module_handler, InfoParserInterface $info_parser, $link_domain, AccountSwitcherInterface $account_switcher) {
     $this->serializer = $serializer;
     $this->entityTypeManager = $entity_type_manager;
     $this->entityRepository = $entity_repository;
@@ -105,6 +115,7 @@ class Exporter implements ExporterInterface {
     $this->moduleHandler = $module_handler;
     $this->infoParser = $info_parser;
     $this->linkDomain = $link_domain;
+    $this->accountSwitcher = $account_switcher;
   }
 
   /**
@@ -114,11 +125,27 @@ class Exporter implements ExporterInterface {
     $storage = $this->entityTypeManager->getStorage($entity_type_id);
     $entity = $storage->load($entity_id);
 
+    if (!$entity) {
+      throw new \InvalidArgumentException(sprintf('Entity "%s" with ID "%s" does not exist', $entity_type_id, $entity_id));
+    }
+    if (!($entity instanceof ContentEntityInterface)) {
+      throw new \InvalidArgumentException(sprintf('Entity "%s" with ID "%s" is not a content entity', $entity_type_id, $entity_id));
+    }
+
+    if ($this->isCli()) {
+      $root_user = $this->entityTypeManager->getStorage('user')->load(1);
+      $this->accountSwitcher->switchTo($root_user);
+    }
     $this->linkManager->setLinkDomain($this->linkDomain);
+
     $return = $this->serializer->serialize($entity, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
-    // Reset link domain.
-    $this->linkManager->setLinkDomain(FALSE);
     $this->eventDispatcher->dispatch(DefaultContentEvents::EXPORT, new ExportEvent($entity));
+
+    // Reset the link domain and the current user, if needed.
+    $this->linkManager->setLinkDomain(FALSE);
+    if ($this->isCli()) {
+      $this->accountSwitcher->switchBack();
+    }
 
     return $return;
   }
@@ -134,19 +161,29 @@ class Exporter implements ExporterInterface {
       throw new \InvalidArgumentException(sprintf('Entity "%s" with ID "%s" does not exist', $entity_type_id, $entity_id));
     }
     if (!($entity instanceof ContentEntityInterface)) {
-      throw new \InvalidArgumentException(sprintf('Entity "%s" with ID "%s" should be a content entity', $entity_type_id, $entity_id));
+      throw new \InvalidArgumentException(sprintf('Entity "%s" with ID "%s" is not a content entity', $entity_type_id, $entity_id));
     }
 
     $entities = [$entity->uuid() => $entity];
     $entities = $this->getEntityReferencesRecursive($entity, 0, $entities);
 
-    $serialized_entities_per_type = [];
+    if ($this->isCli()) {
+      $root_user = $this->entityTypeManager->getStorage('user')->load(1);
+      $this->accountSwitcher->switchTo($root_user);
+    }
     $this->linkManager->setLinkDomain($this->linkDomain);
+
     // Serialize all entities and key them by entity TYPE and uuid.
+    $serialized_entities_per_type = [];
     foreach ($entities as $entity) {
       $serialized_entities_per_type[$entity->getEntityTypeId()][$entity->uuid()] = $this->serializer->serialize($entity, 'hal_json', ['json_encode_options' => JSON_PRETTY_PRINT]);
     }
+
+    // Reset the link domain and the current user, if needed.
     $this->linkManager->setLinkDomain(FALSE);
+    if ($this->isCli()) {
+      $this->accountSwitcher->switchBack();
+    }
 
     return $serialized_entities_per_type;
   }
@@ -251,6 +288,15 @@ class Exporter implements ExporterInterface {
     }
 
     return $indexed_dependencies;
+  }
+
+  /**
+   * Returns whether the current PHP process runs on CLI.
+   *
+   * @return bool
+   */
+  protected function isCli() {
+    return PHP_SAPI === 'cli';
   }
 
 }
