@@ -3,8 +3,8 @@
 namespace Drupal\Tests\default_content\Functional;
 
 use Drupal\Core\Config\FileStorage;
-use Drupal\simpletest\ContentTypeCreationTrait;
-use Drupal\simpletest\NodeCreationTrait;
+use Drupal\Tests\node\Traits\ContentTypeCreationTrait;
+use Drupal\Tests\node\Traits\NodeCreationTrait;
 use Drupal\user\Entity\User;
 use Drupal\Tests\BrowserTestBase;
 
